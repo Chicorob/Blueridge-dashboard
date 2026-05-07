@@ -1,0 +1,2359 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>BlueRidge Life Sciences — Project Dashboard</title>
+<style>
+/* ========== CSS RESET & VARIABLES ========== */
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --br-blue:#0067B1;
+  --br-blue-dark:#00457C;
+  --br-blue-darker:#002D52;
+  --br-blue-light:#E8F4FD;
+  --br-blue-mid:#3A8FD2;
+  --br-green:#8CB82B;
+  --br-green-light:#EBF5D6;
+  --br-green-dark:#6A8F1F;
+  --bg-main:#F3F6FA;
+  --bg-card:#FFFFFF;
+  --text-primary:#1A2332;
+  --text-secondary:#5A6B7F;
+  --text-muted:#8E9BAD;
+  --border:#E2E8F0;
+  --border-light:#F0F3F7;
+  --shadow-sm:0 1px 3px rgba(0,40,80,.06),0 1px 2px rgba(0,40,80,.04);
+  --shadow-md:0 4px 12px rgba(0,40,80,.08),0 2px 4px rgba(0,40,80,.04);
+  --shadow-lg:0 12px 36px rgba(0,40,80,.12),0 4px 12px rgba(0,40,80,.06);
+  --shadow-xl:0 20px 60px rgba(0,40,80,.16);
+  --status-green:#22C55E;
+  --status-green-bg:#F0FDF4;
+  --status-amber:#F59E0B;
+  --status-amber-bg:#FFFBEB;
+  --status-red:#EF4444;
+  --status-red-bg:#FEF2F2;
+  --status-blue:#3B82F6;
+  --status-blue-bg:#EFF6FF;
+  --radius:10px;
+  --radius-lg:14px;
+  --radius-sm:6px;
+  --transition:all .2s cubic-bezier(.4,0,.2,1);
+  --sidebar-w:270px;
+  --header-h:64px;
+
+  /* Division colors */
+  --div-tox:#0067B1;
+  --div-clin:#7C3AED;
+  --div-mod:#0891B2;
+  --div-design:#D97706;
+  --div-suttons:#059669;
+  --div-corp:#64748B;
+}
+
+html{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,"Helvetica Neue",Arial,sans-serif;font-size:14px;line-height:1.5;color:var(--text-primary);background:var(--bg-main)}
+body{display:flex;flex-direction:column;height:100vh;overflow:hidden}
+button{cursor:pointer;font:inherit;border:none;background:none}
+input,select,textarea{font:inherit;border:1px solid var(--border);border-radius:var(--radius-sm);padding:8px 12px;outline:none;transition:var(--transition)}
+input:focus,select:focus,textarea:focus{border-color:var(--br-blue);box-shadow:0 0 0 3px rgba(0,103,177,.12)}
+textarea{resize:vertical;min-height:60px}
+select{background:#fff}
+
+/* ========== SCROLLBAR ========== */
+::-webkit-scrollbar{width:6px;height:6px}
+::-webkit-scrollbar-track{background:transparent}
+::-webkit-scrollbar-thumb{background:var(--border);border-radius:3px}
+::-webkit-scrollbar-thumb:hover{background:var(--text-muted)}
+
+/* ========== HEADER ========== */
+.header{
+  height:var(--header-h);display:flex;align-items:center;justify-content:space-between;
+  padding:0 24px;background:#fff;border-bottom:1px solid var(--border);
+  box-shadow:var(--shadow-sm);z-index:100;flex-shrink:0;
+}
+.header-left{display:flex;align-items:center;gap:16px}
+.logo-area{display:flex;align-items:center;gap:12px}
+.logo-area svg{height:38px;width:auto}
+.header-title{font-size:15px;font-weight:600;color:var(--text-secondary);border-left:2px solid var(--border);padding-left:16px}
+.header-right{display:flex;align-items:center;gap:12px}
+.btn{
+  display:inline-flex;align-items:center;gap:6px;padding:8px 16px;
+  border-radius:var(--radius-sm);font-size:13px;font-weight:500;
+  transition:var(--transition);white-space:nowrap;
+}
+.btn-primary{background:var(--br-blue);color:#fff}
+.btn-primary:hover{background:var(--br-blue-dark)}
+.btn-secondary{background:var(--bg-main);color:var(--text-primary);border:1px solid var(--border)}
+.btn-secondary:hover{background:var(--border-light);border-color:var(--text-muted)}
+.btn-danger{background:var(--status-red);color:#fff}
+.btn-danger:hover{background:#DC2626}
+.btn-ghost{color:var(--text-secondary);padding:6px 10px}
+.btn-ghost:hover{background:var(--bg-main);color:var(--text-primary)}
+.btn-sm{padding:5px 10px;font-size:12px}
+.btn-icon{width:34px;height:34px;padding:0;display:flex;align-items:center;justify-content:center;border-radius:var(--radius-sm)}
+
+/* ========== LAYOUT ========== */
+.app-body{display:flex;flex:1;overflow:hidden}
+
+/* ========== SIDEBAR ========== */
+.sidebar{
+  width:var(--sidebar-w);background:#fff;border-right:1px solid var(--border);
+  display:flex;flex-direction:column;overflow-y:auto;flex-shrink:0;
+}
+.sidebar-section{padding:16px 18px;border-bottom:1px solid var(--border-light)}
+.sidebar-label{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:1.2px;color:var(--text-muted);margin-bottom:10px}
+.sidebar-nav{display:flex;flex-direction:column;gap:2px}
+.nav-item{
+  display:flex;align-items:center;gap:10px;padding:9px 12px;border-radius:var(--radius-sm);
+  cursor:pointer;transition:var(--transition);font-size:13px;color:var(--text-secondary);font-weight:500;
+}
+.nav-item:hover{background:var(--br-blue-light);color:var(--br-blue)}
+.nav-item.active{background:var(--br-blue);color:#fff}
+.nav-item .dot{width:8px;height:8px;border-radius:50%;flex-shrink:0}
+.nav-item .count{margin-left:auto;font-size:11px;background:var(--bg-main);color:var(--text-muted);padding:1px 7px;border-radius:10px}
+.nav-item.active .count{background:rgba(255,255,255,.2);color:#fff}
+
+/* Quarter filter */
+.quarter-grid{display:grid;grid-template-columns:1fr 1fr;gap:4px}
+.quarter-chip{
+  padding:6px 10px;border-radius:var(--radius-sm);font-size:12px;font-weight:500;
+  text-align:center;cursor:pointer;transition:var(--transition);
+  background:var(--bg-main);color:var(--text-secondary);border:1px solid transparent;
+}
+.quarter-chip:hover{border-color:var(--br-blue);color:var(--br-blue)}
+.quarter-chip.active{background:var(--br-blue);color:#fff;border-color:var(--br-blue)}
+.year-row{grid-column:1/-1;display:flex;align-items:center;gap:6px;padding:6px 0 2px}
+.year-label{font-size:11px;font-weight:700;color:var(--text-muted)}
+.year-line{flex:1;height:1px;background:var(--border)}
+.quarter-actions{display:flex;gap:4px;margin-top:8px}
+.quarter-actions .btn{flex:1;justify-content:center;font-size:11px;padding:5px 8px}
+
+/* Filters */
+.filter-group{display:flex;flex-direction:column;gap:6px}
+.filter-group label{font-size:12px;font-weight:600;color:var(--text-secondary)}
+.search-box{position:relative}
+.search-box input{width:100%;padding-left:32px;font-size:13px}
+.search-box svg{position:absolute;left:10px;top:50%;transform:translateY(-50%);color:var(--text-muted)}
+.toggle-row{display:flex;align-items:center;justify-content:space-between;padding:4px 0}
+.toggle-row label{font-size:13px;color:var(--text-secondary)}
+.toggle{
+  position:relative;width:40px;height:22px;background:var(--border);border-radius:11px;
+  cursor:pointer;transition:var(--transition);
+}
+.toggle.on{background:var(--br-blue)}
+.toggle::after{
+  content:'';position:absolute;top:2px;left:2px;width:18px;height:18px;
+  background:#fff;border-radius:50%;transition:var(--transition);box-shadow:var(--shadow-sm);
+}
+.toggle.on::after{transform:translateX(18px)}
+
+/* ========== MAIN CONTENT ========== */
+.main{flex:1;overflow-y:auto;padding:24px;display:flex;flex-direction:column;gap:20px}
+
+/* ========== KPI STRIP ========== */
+.kpi-strip{display:flex;gap:12px;flex-wrap:wrap}
+.kpi-card{
+  flex:1;min-width:180px;background:#fff;border-radius:var(--radius);padding:16px 18px;
+  box-shadow:var(--shadow-sm);border:1px solid var(--border-light);
+  display:flex;flex-direction:column;gap:4px;transition:var(--transition);
+}
+.kpi-card:hover{box-shadow:var(--shadow-md);transform:translateY(-1px)}
+.kpi-label{font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:.8px;color:var(--text-muted)}
+.kpi-value{font-size:28px;font-weight:700;color:var(--text-primary);line-height:1.1}
+.kpi-sub{font-size:12px;color:var(--text-secondary);display:flex;align-items:center;gap:4px}
+.kpi-bar{height:4px;background:var(--bg-main);border-radius:2px;margin-top:6px;overflow:hidden}
+.kpi-bar-fill{height:100%;border-radius:2px;transition:width .6s ease}
+
+/* ========== DIVISION SUMMARY CARDS (Enterprise View) ========== */
+.division-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(420px,1fr));gap:16px}
+.division-card{
+  background:#fff;border-radius:var(--radius-lg);box-shadow:var(--shadow-sm);
+  border:1px solid var(--border-light);overflow:hidden;transition:var(--transition);cursor:pointer;
+}
+.division-card:hover{box-shadow:var(--shadow-md);transform:translateY(-2px)}
+.division-card-header{
+  padding:16px 20px;display:flex;align-items:center;justify-content:space-between;
+  border-bottom:1px solid var(--border-light);
+}
+.division-card-header h3{font-size:15px;font-weight:700;display:flex;align-items:center;gap:8px}
+.division-card-header h3 .dot{width:10px;height:10px;border-radius:50%}
+.division-card-body{padding:16px 20px}
+.division-stats{display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px;margin-bottom:14px}
+.division-stat{text-align:center}
+.division-stat .val{font-size:20px;font-weight:700}
+.division-stat .lab{font-size:11px;color:var(--text-muted);text-transform:uppercase;letter-spacing:.5px}
+.mini-project-list{display:flex;flex-direction:column;gap:6px}
+.mini-project{
+  display:flex;align-items:center;gap:8px;padding:6px 10px;
+  background:var(--bg-main);border-radius:var(--radius-sm);font-size:12px;
+}
+.mini-project .name{flex:1;font-weight:500;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.mini-project .status-dot{width:8px;height:8px;border-radius:50%;flex-shrink:0}
+.mini-project .pct{font-weight:600;color:var(--text-secondary);font-size:11px;min-width:35px;text-align:right}
+
+/* ========== PROJECT TABLE ========== */
+.projects-header{display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap}
+.projects-header h2{font-size:18px;font-weight:700;color:var(--text-primary)}
+.view-toggle{display:flex;background:var(--bg-main);border-radius:var(--radius-sm);border:1px solid var(--border);overflow:hidden}
+.view-toggle button{padding:6px 14px;font-size:12px;font-weight:600;transition:var(--transition);color:var(--text-secondary)}
+.view-toggle button.active{background:var(--br-blue);color:#fff}
+
+.project-table{width:100%;border-collapse:separate;border-spacing:0;background:#fff;border-radius:var(--radius-lg);box-shadow:var(--shadow-sm);overflow:hidden;border:1px solid var(--border-light)}
+.project-table th{
+  padding:10px 14px;font-size:11px;font-weight:700;text-transform:uppercase;
+  letter-spacing:.8px;color:var(--text-muted);background:var(--bg-main);
+  border-bottom:1px solid var(--border);text-align:left;white-space:nowrap;
+  position:sticky;top:0;z-index:5;
+}
+.project-table td{padding:12px 14px;border-bottom:1px solid var(--border-light);font-size:13px;vertical-align:middle}
+.project-table tr:last-child td{border-bottom:none}
+.project-table tbody tr{transition:var(--transition);cursor:pointer}
+.project-table tbody tr:hover{background:var(--br-blue-light)}
+
+/* ========== STATUS BADGES ========== */
+.badge{
+  display:inline-flex;align-items:center;gap:4px;padding:3px 10px;border-radius:12px;
+  font-size:11px;font-weight:600;white-space:nowrap;
+}
+.badge-green{background:var(--status-green-bg);color:#15803D}
+.badge-amber{background:var(--status-amber-bg);color:#B45309}
+.badge-red{background:var(--status-red-bg);color:#DC2626}
+.badge-blue{background:var(--status-blue-bg);color:#2563EB}
+.badge-gray{background:var(--bg-main);color:var(--text-muted)}
+.badge-dot{width:6px;height:6px;border-radius:50%}
+.badge-green .badge-dot{background:var(--status-green)}
+.badge-amber .badge-dot{background:var(--status-amber)}
+.badge-red .badge-dot{background:var(--status-red)}
+.badge-blue .badge-dot{background:var(--status-blue)}
+.badge-gray .badge-dot{background:var(--text-muted)}
+
+.risk-score{
+  display:inline-flex;align-items:center;justify-content:center;
+  width:28px;height:28px;border-radius:50%;font-size:12px;font-weight:700;color:#fff;
+}
+.risk-low{background:var(--status-green)}
+.risk-med{background:var(--status-amber)}
+.risk-high{background:var(--status-red)}
+
+/* Progress bar */
+.progress{height:6px;background:var(--bg-main);border-radius:3px;overflow:hidden;min-width:80px}
+.progress-fill{height:100%;border-radius:3px;transition:width .4s ease}
+.progress-wrap{display:flex;align-items:center;gap:8px}
+.progress-pct{font-size:12px;font-weight:600;color:var(--text-secondary);min-width:32px}
+
+/* Budget bar */
+.budget-bar{display:flex;flex-direction:column;gap:2px;min-width:120px}
+.budget-label{font-size:11px;color:var(--text-muted)}
+.budget-amounts{font-size:11px;font-weight:500}
+
+/* ========== PROJECT CARDS VIEW ========== */
+.project-cards{display:grid;grid-template-columns:repeat(auto-fill,minmax(380px,1fr));gap:16px}
+.project-card{
+  background:#fff;border-radius:var(--radius-lg);box-shadow:var(--shadow-sm);
+  border:1px solid var(--border-light);overflow:hidden;transition:var(--transition);
+  cursor:pointer;display:flex;flex-direction:column;
+}
+.project-card:hover{box-shadow:var(--shadow-md);transform:translateY(-2px)}
+.project-card-top{height:4px}
+.project-card-body{padding:18px 20px;flex:1;display:flex;flex-direction:column;gap:12px}
+.project-card-title{font-size:15px;font-weight:700;color:var(--text-primary)}
+.project-card-meta{display:flex;gap:16px;font-size:12px;color:var(--text-secondary)}
+.project-card-meta span{display:flex;align-items:center;gap:4px}
+.project-card-statuses{display:flex;gap:8px;flex-wrap:wrap}
+.project-card-bottom{
+  padding:12px 20px;background:var(--bg-main);border-top:1px solid var(--border-light);
+  display:flex;align-items:center;justify-content:space-between;font-size:12px;
+}
+.project-card-deliverables{color:var(--text-muted)}
+.project-card-risk{display:flex;align-items:center;gap:6px;font-weight:600}
+
+/* ========== PROJECT DETAIL PANEL ========== */
+.detail-overlay{
+  position:fixed;inset:0;background:rgba(0,30,60,.4);z-index:500;
+  opacity:0;pointer-events:none;transition:opacity .25s ease;
+  backdrop-filter:blur(4px);
+}
+.detail-overlay.open{opacity:1;pointer-events:all}
+.detail-panel{
+  position:fixed;top:0;right:0;bottom:0;width:680px;max-width:100%;
+  background:#fff;z-index:501;transform:translateX(100%);transition:transform .3s cubic-bezier(.4,0,.2,1);
+  display:flex;flex-direction:column;box-shadow:var(--shadow-xl);
+}
+.detail-panel.open{transform:translateX(0)}
+.detail-header{
+  padding:18px 24px;display:flex;align-items:center;justify-content:space-between;
+  border-bottom:1px solid var(--border);flex-shrink:0;
+}
+.detail-header h2{font-size:16px;font-weight:700}
+.detail-header-actions{display:flex;gap:8px}
+.detail-body{flex:1;overflow-y:auto;padding:24px}
+.detail-section{margin-bottom:24px}
+.detail-section h3{
+  font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:1px;
+  color:var(--text-muted);margin-bottom:12px;display:flex;align-items:center;gap:8px;
+}
+.detail-section h3::after{content:'';flex:1;height:1px;background:var(--border-light)}
+.detail-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.detail-field{display:flex;flex-direction:column;gap:3px}
+.detail-field label{font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:.5px;color:var(--text-muted)}
+.detail-field .value{font-size:14px;font-weight:500}
+.detail-field input,.detail-field select,.detail-field textarea{font-size:13px}
+.detail-field.full{grid-column:1/-1}
+
+/* Deliverables table in detail */
+.del-table{width:100%;border-collapse:collapse;font-size:13px}
+.del-table th{padding:6px 10px;text-align:left;font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.5px;color:var(--text-muted);border-bottom:1px solid var(--border)}
+.del-table td{padding:8px 10px;border-bottom:1px solid var(--border-light)}
+.del-table tr:last-child td{border-bottom:none}
+
+/* Risks in detail */
+.risk-card{
+  padding:12px 14px;background:var(--bg-main);border-radius:var(--radius-sm);
+  margin-bottom:8px;border-left:3px solid var(--border);
+}
+.risk-card.risk-card-high{border-left-color:var(--status-red)}
+.risk-card.risk-card-med{border-left-color:var(--status-amber)}
+.risk-card.risk-card-low{border-left-color:var(--status-green)}
+.risk-card-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:6px}
+.risk-card-desc{font-size:13px;font-weight:500}
+.risk-card-scores{display:flex;gap:8px;font-size:11px;color:var(--text-muted)}
+.risk-card-scores span{display:flex;align-items:center;gap:3px}
+.risk-card-mitigation{font-size:12px;color:var(--text-secondary);margin-top:6px;padding-top:6px;border-top:1px dashed var(--border)}
+
+/* Issues in detail */
+.issue-row{display:flex;align-items:flex-start;gap:10px;padding:8px 0;border-bottom:1px solid var(--border-light)}
+.issue-row:last-child{border-bottom:none}
+
+/* ========== EDITOR FIELDS WITHIN DETAIL ========== */
+.editor-row{display:flex;gap:8px;align-items:flex-start;margin-bottom:8px}
+.editor-row .grow{flex:1}
+.add-row-btn{
+  display:flex;align-items:center;gap:4px;padding:6px 12px;font-size:12px;
+  color:var(--br-blue);font-weight:600;border:1px dashed var(--br-blue);
+  border-radius:var(--radius-sm);transition:var(--transition);width:100%;justify-content:center;
+}
+.add-row-btn:hover{background:var(--br-blue-light)}
+.remove-btn{
+  width:28px;height:28px;border-radius:50%;display:flex;align-items:center;justify-content:center;
+  color:var(--status-red);font-size:16px;transition:var(--transition);flex-shrink:0;margin-top:2px;
+}
+.remove-btn:hover{background:var(--status-red-bg)}
+
+/* ========== TOAST ========== */
+.toast-container{position:fixed;bottom:24px;right:24px;z-index:1000;display:flex;flex-direction:column;gap:8px}
+.toast{
+  padding:12px 20px;border-radius:var(--radius);background:var(--br-blue-darker);color:#fff;
+  font-size:13px;font-weight:500;box-shadow:var(--shadow-lg);
+  display:flex;align-items:center;gap:8px;min-width:260px;
+  animation:toastIn .3s ease,toastOut .3s ease 2.7s forwards;
+}
+.toast svg{flex-shrink:0}
+@keyframes toastIn{from{transform:translateX(120%);opacity:0}to{transform:translateX(0);opacity:1}}
+@keyframes toastOut{from{transform:translateX(0);opacity:1}to{transform:translateX(120%);opacity:0}}
+
+/* ========== MODAL ========== */
+.modal-overlay{
+  position:fixed;inset:0;background:rgba(0,30,60,.5);z-index:600;
+  display:flex;align-items:center;justify-content:center;
+  opacity:0;pointer-events:none;transition:opacity .2s ease;
+  backdrop-filter:blur(4px);
+}
+.modal-overlay.open{opacity:1;pointer-events:all}
+.modal{
+  background:#fff;border-radius:var(--radius-lg);box-shadow:var(--shadow-xl);
+  width:500px;max-width:90%;max-height:80vh;overflow-y:auto;padding:28px;
+}
+.modal h2{font-size:18px;font-weight:700;margin-bottom:16px}
+.modal-actions{display:flex;gap:10px;justify-content:flex-end;margin-top:20px}
+
+/* ========== DRILL-DOWN MODAL ========== */
+.drilldown-overlay{
+  position:fixed;inset:0;background:rgba(0,30,60,.5);z-index:650;
+  display:flex;align-items:center;justify-content:center;
+  opacity:0;pointer-events:none;transition:opacity .2s ease;
+  backdrop-filter:blur(4px);
+}
+.drilldown-overlay.open{opacity:1;pointer-events:all}
+.drilldown{
+  background:#fff;border-radius:var(--radius-lg);box-shadow:var(--shadow-xl);
+  width:820px;max-width:94%;max-height:85vh;display:flex;flex-direction:column;overflow:hidden;
+}
+.drilldown-header{
+  padding:20px 24px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;flex-shrink:0;
+}
+.drilldown-header h2{font-size:17px;font-weight:700;display:flex;align-items:center;gap:10px}
+.drilldown-header .kpi-chip{
+  display:inline-flex;align-items:center;gap:5px;padding:4px 12px;border-radius:14px;
+  font-size:13px;font-weight:700;
+}
+.drilldown-body{flex:1;overflow-y:auto;padding:20px 24px}
+.drilldown-table{width:100%;border-collapse:separate;border-spacing:0;font-size:13px}
+.drilldown-table th{
+  padding:8px 12px;font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.7px;
+  color:var(--text-muted);background:var(--bg-main);border-bottom:1px solid var(--border);
+  text-align:left;white-space:nowrap;position:sticky;top:0;z-index:2;
+}
+.drilldown-table td{padding:10px 12px;border-bottom:1px solid var(--border-light);vertical-align:middle}
+.drilldown-table tbody tr{transition:var(--transition);cursor:pointer}
+.drilldown-table tbody tr:hover{background:var(--br-blue-light)}
+.drilldown-table tbody tr:last-child td{border-bottom:none}
+.drilldown-risk-row{display:flex;align-items:center;gap:10px;padding:10px 14px;background:var(--bg-main);border-radius:var(--radius-sm);margin-bottom:6px}
+.drilldown-risk-row .risk-project{font-weight:600;min-width:160px}
+.drilldown-risk-row .risk-desc{flex:1;font-size:13px;color:var(--text-secondary)}
+.drilldown-risk-row .risk-mitigation{font-size:12px;color:var(--text-muted);margin-top:2px}
+
+.kpi-card{cursor:pointer}
+
+/* ========== EMPTY STATE ========== */
+.empty-state{
+  display:flex;flex-direction:column;align-items:center;justify-content:center;
+  padding:60px 20px;color:var(--text-muted);text-align:center;gap:12px;
+}
+.empty-state svg{opacity:.3}
+.empty-state h3{font-size:16px;font-weight:600;color:var(--text-secondary)}
+.empty-state p{font-size:13px;max-width:360px}
+
+/* ========== RESPONSIVE ========== */
+@media(max-width:900px){
+  .sidebar{display:none}
+  .division-grid{grid-template-columns:1fr}
+  .project-cards{grid-template-columns:1fr}
+  .detail-panel{width:100%}
+  .detail-grid{grid-template-columns:1fr}
+}
+
+/* Print */
+@media print{
+  .sidebar,.header-right,.detail-overlay,.toast-container{display:none!important}
+  .main{padding:10px}
+  .project-card,.division-card{break-inside:avoid}
+}
+</style>
+</head>
+<body>
+
+<!-- ==================== HEADER ==================== -->
+<header class="header">
+  <div class="header-left">
+    <div class="logo-area">
+      <svg viewBox="0 0 340 100" xmlns="http://www.w3.org/2000/svg" style="height:38px">
+        <defs>
+          <linearGradient id="mg" x1="0%" y1="100%" x2="100%" y2="0%">
+            <stop offset="0%" style="stop-color:#0067B1"/>
+            <stop offset="100%" style="stop-color:#3A8FD2"/>
+          </linearGradient>
+        </defs>
+        <!-- Mountains -->
+        <polygon points="240,65 270,20 300,65" fill="#0067B1"/>
+        <polygon points="265,65 295,28 325,65" fill="#00457C"/>
+        <polygon points="252,65 283,42 313,65" fill="#8CB82B" opacity=".85"/>
+        <!-- Text -->
+        <text x="0" y="62" font-family="-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif" font-size="42" font-weight="800" fill="#0067B1">BlueRidge</text>
+        <text x="0" y="88" font-family="-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif" font-size="18" font-weight="400" fill="#0067B1" letter-spacing="5">LIFE SCIENCES</text>
+      </svg>
+    </div>
+    <div class="header-title">Project Dashboard</div>
+  </div>
+  <div class="header-right">
+    <button class="btn btn-secondary btn-sm" onclick="exportJSON()" title="Export data as JSON">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+      Export
+    </button>
+    <button class="btn btn-secondary btn-sm" onclick="document.getElementById('importInput').click()" title="Import JSON data">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+      Import
+    </button>
+    <input type="file" id="importInput" accept=".json" style="display:none" onchange="importJSON(event)">
+    <button class="btn btn-primary btn-sm" onclick="openNewProject()">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+      New Project
+    </button>
+  </div>
+</header>
+
+<div class="app-body">
+
+<!-- ==================== SIDEBAR ==================== -->
+<aside class="sidebar" id="sidebar">
+  <!-- View Navigation -->
+  <div class="sidebar-section">
+    <div class="sidebar-label">Views</div>
+    <nav class="sidebar-nav" id="navViews">
+      <div class="nav-item active" data-view="enterprise" onclick="switchView('enterprise')">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/></svg>
+        Enterprise Overview
+      </div>
+    </nav>
+  </div>
+
+  <!-- Divisions -->
+  <div class="sidebar-section">
+    <div class="sidebar-label">Divisions</div>
+    <nav class="sidebar-nav" id="navDivisions"></nav>
+  </div>
+
+  <!-- Quarter Filter -->
+  <div class="sidebar-section">
+    <div class="sidebar-label">Quarter Filter</div>
+    <div class="quarter-grid" id="quarterGrid"></div>
+    <div class="quarter-actions">
+      <button class="btn btn-secondary btn-sm" onclick="selectAllQuarters()">All</button>
+      <button class="btn btn-sm" id="currentBtn" onclick="selectCurrentQuarter()">Current</button>
+      <button class="btn btn-secondary btn-sm" onclick="clearQuarters()">Clear</button>
+    </div>
+    <div style="margin-top:8px">
+      <button class="btn btn-secondary btn-sm" id="includeArchivedBtn" onclick="toggleIncludeArchived()" style="width:100%;justify-content:center;gap:6px">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 8v13H3V8"/><path d="M1 3h22v5H1z"/><path d="M10 12h4"/></svg>
+        Include Archived
+      </button>
+    </div>
+  </div>
+
+  <!-- Filters -->
+  <div class="sidebar-section">
+    <div class="sidebar-label">Filters</div>
+    <div class="filter-group">
+      <div class="search-box">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+        <input type="text" placeholder="Search projects..." id="searchInput" oninput="applyFilters()">
+      </div>
+    </div>
+    <div style="margin-top:10px">
+      <div class="filter-group">
+        <label>Status</label>
+        <select id="statusFilter" onchange="applyFilters()">
+          <option value="all">All Statuses</option>
+          <option value="on-track">On Track</option>
+          <option value="at-risk">At Risk</option>
+          <option value="delayed">Delayed</option>
+          <option value="completed">Completed</option>
+          <option value="on-hold">On Hold</option>
+        </select>
+      </div>
+    </div>
+  </div>
+
+  <!-- Data Management -->
+  <div class="sidebar-section">
+    <div class="sidebar-label">Data</div>
+    <button class="btn btn-danger btn-sm" style="width:100%;justify-content:center" onclick="confirmClearData()">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 01-2 2H7a2 2 0 01-2-2V6m3 0V4a2 2 0 012-2h4a2 2 0 012 2v2"/></svg>
+      Clear All Sample Data
+    </button>
+    <button class="btn btn-secondary btn-sm" style="width:100%;justify-content:center;margin-top:6px" onclick="loadSampleData()">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 12a9 9 0 019-9 9.75 9.75 0 016.74 2.74L21 8"/><path d="M21 3v5h-5"/><path d="M21 12a9 9 0 01-9 9 9.75 9.75 0 01-6.74-2.74L3 16"/><path d="M3 21v-5h5"/></svg>
+      Reload Sample Data
+    </button>
+  </div>
+</aside>
+
+<!-- ==================== MAIN CONTENT ==================== -->
+<main class="main" id="mainContent"></main>
+
+</div><!-- /app-body -->
+
+<!-- ==================== DETAIL / EDITOR PANEL ==================== -->
+<div class="detail-overlay" id="detailOverlay" onclick="closeDetail()"></div>
+<div class="detail-panel" id="detailPanel">
+  <div class="detail-header">
+    <h2 id="detailTitle">Project Details</h2>
+    <div class="detail-header-actions">
+      <button class="btn btn-ghost btn-sm" id="archiveBtn" onclick="toggleArchiveProject()">Archive</button>
+      <button class="btn btn-danger btn-sm" id="deleteBtn" onclick="deleteProject()">Delete</button>
+      <button class="btn-icon btn-ghost" onclick="closeDetail()">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+      </button>
+    </div>
+  </div>
+  <div class="detail-body" id="detailBody"></div>
+</div>
+
+<!-- ==================== CONFIRM MODAL ==================== -->
+<div class="modal-overlay" id="confirmModal">
+  <div class="modal">
+    <h2 id="confirmTitle">Confirm</h2>
+    <p id="confirmMessage" style="color:var(--text-secondary)"></p>
+    <div class="modal-actions">
+      <button class="btn btn-secondary" onclick="closeConfirm()">Cancel</button>
+      <button class="btn btn-danger" id="confirmOk" onclick="closeConfirm()">Confirm</button>
+    </div>
+  </div>
+</div>
+
+<!-- ==================== DRILL-DOWN MODAL ==================== -->
+<div class="drilldown-overlay" id="drilldownOverlay" onclick="closeDrilldown()">
+  <div class="drilldown" onclick="event.stopPropagation()">
+    <div class="drilldown-header">
+      <h2 id="drilldownTitle">Drill-Down</h2>
+      <button class="btn-icon btn-ghost" onclick="closeDrilldown()">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+      </button>
+    </div>
+    <div class="drilldown-body" id="drilldownBody"></div>
+  </div>
+</div>
+
+<!-- ==================== TOAST CONTAINER ==================== -->
+<div class="toast-container" id="toastContainer"></div>
+
+<!-- ==================== JAVASCRIPT ==================== -->
+<script src="pptxgen.bundle.js"></script>
+<script>
+// ===================================================================
+// DATA MODEL & STATE
+// ===================================================================
+const DIVISIONS = [
+  {id:'toxstrategies', name:'ToxStrategies', color:'var(--div-tox)'},
+  {id:'clintrex',      name:'Clintrex',      color:'var(--div-clin)'},
+  {id:'modality',      name:'Modality Solutions', color:'var(--div-mod)'},
+  {id:'designscience', name:'Design Science',     color:'var(--div-design)'},
+  {id:'suttonscreek',  name:'Suttons Creek',      color:'var(--div-suttons)'},
+  {id:'corpservices',   name:'BlueRidge Corporate Services', color:'var(--div-corp)'}
+];
+
+const STORAGE_KEY = 'blueridge_dashboard_v2';
+let state = {
+  projects: [],
+  currentView: 'enterprise',      // 'enterprise' or division id
+  selectedQuarters: [],
+  showArchived: false,             // true = include archived alongside active
+  showCurrentActive: false,        // true = show all active, ignore quarter filter
+  searchQuery: '',
+  statusFilter: 'all',
+  projectViewMode: 'cards',        // 'cards' or 'table'
+  editingProjectId: null
+};
+
+let autosaveTimer = null;
+
+// ===================================================================
+// PERSISTENCE
+// ===================================================================
+function saveData() {
+  try {
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(state.projects));
+  } catch(e) { console.error('Save failed', e); }
+}
+
+function loadData() {
+  try {
+    const raw = localStorage.getItem(STORAGE_KEY);
+    if (raw) { state.projects = JSON.parse(raw); return true; }
+  } catch(e) { console.error('Load failed', e); }
+  return false;
+}
+
+function exportJSON() {
+  const blob = new Blob([JSON.stringify(state.projects, null, 2)], {type:'application/json'});
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = `blueridge-projects-${new Date().toISOString().slice(0,10)}.json`;
+  a.click();
+  URL.revokeObjectURL(url);
+  showToast('Data exported successfully');
+}
+
+function importJSON(event) {
+  const file = event.target.files[0];
+  if (!file) return;
+  const reader = new FileReader();
+  reader.onload = function(e) {
+    try {
+      const data = JSON.parse(e.target.result);
+      if (Array.isArray(data)) {
+        state.projects = data;
+        saveData();
+        renderAll();
+        showToast('Data imported successfully — ' + data.length + ' projects');
+      } else {
+        showToast('Invalid file format', 'error');
+      }
+    } catch(err) {
+      showToast('Failed to parse JSON file', 'error');
+    }
+  };
+  reader.readAsText(file);
+  event.target.value = '';
+}
+
+// ===================================================================
+// SAMPLE DATA
+// ===================================================================
+function generateId() { return 'p' + Date.now().toString(36) + Math.random().toString(36).slice(2,6); }
+
+function getQuarter(date) {
+  const d = new Date(date);
+  return `Q${Math.ceil((d.getMonth()+1)/3)} ${d.getFullYear()}`;
+}
+
+function buildSampleProjects() {
+  return [
+    // ToxStrategies
+    {
+      id: generateId(), division: 'toxstrategies', name: 'PFAS Toxicological Risk Assessment',
+      description: 'Comprehensive risk assessment for PFAS compounds in drinking water for municipal client.',
+      sponsor: 'Dr. Emily Carter', projectLead: 'Michael Torres',
+      quarter: 'Q1 2026', startDate: '2026-01-05', endDate: '2026-06-30',
+      timelineStatus: 'on-track', budgetTotal: 420000, budgetSpent: 185000, budgetStatus: 'on-track',
+      percentComplete: 42,
+      deliverables: [
+        {name:'Literature Review Report', dueDate:'2026-02-15', status:'complete'},
+        {name:'Dose-Response Analysis', dueDate:'2026-03-30', status:'in-progress'},
+        {name:'Risk Characterization Document', dueDate:'2026-05-15', status:'pending'},
+        {name:'Final Assessment Report', dueDate:'2026-06-30', status:'pending'}
+      ],
+      risks: [
+        {description:'Regulatory guidance changes mid-study', severity:2, probability:2, mitigation:'Monitor EPA updates weekly; modular report design allows rapid adaptation'},
+        {description:'Data gaps in emerging PFAS analytes', severity:3, probability:2, mitigation:'Pre-identified alternative data sources; read-across methodology prepared'}
+      ],
+      issues: [{description:'Client requested scope expansion for GenX compounds', priority:'medium', owner:'Michael Torres', status:'open'}],
+      notes: 'Key municipal contract. Potential for follow-on remediation support.', archived: false
+    },
+    {
+      id: generateId(), division: 'toxstrategies', name: 'Pesticide Reregistration Dossier',
+      description: 'Preparation of toxicology dossier for EPA reregistration of agricultural herbicide.',
+      sponsor: 'Sarah Kim', projectLead: 'David Chen',
+      quarter: 'Q1 2026', startDate: '2025-11-01', endDate: '2026-04-30',
+      timelineStatus: 'at-risk', budgetTotal: 680000, budgetSpent: 510000, budgetStatus: 'at-risk',
+      percentComplete: 72,
+      deliverables: [
+        {name:'Toxicology Summary', dueDate:'2026-01-15', status:'complete'},
+        {name:'Dietary Exposure Assessment', dueDate:'2026-02-28', status:'complete'},
+        {name:'Aggregate Risk Assessment', dueDate:'2026-03-31', status:'in-progress'},
+        {name:'EPA Submission Package', dueDate:'2026-04-30', status:'pending'}
+      ],
+      risks: [
+        {description:'EPA reviewer requests additional data', severity:3, probability:3, mitigation:'Pre-submission meeting scheduled; supplemental studies on standby'},
+        {description:'Budget overrun due to expanded scope', severity:2, probability:3, mitigation:'Change order in progress; client notified'}
+      ],
+      issues: [{description:'Lab turnaround delayed by 2 weeks for supplemental study', priority:'high', owner:'David Chen', status:'open'}],
+      notes: 'Critical deadline — EPA submission window closes April 30.', archived: false
+    },
+    // Clintrex
+    {
+      id: generateId(), division: 'clintrex', name: 'Phase III Oncology — APEX-301',
+      description: 'Multi-center Phase III trial for novel PD-L1 inhibitor in advanced NSCLC.',
+      sponsor: 'Dr. James Wright', projectLead: 'Rachel Novak',
+      quarter: 'Q1 2026', startDate: '2025-06-01', endDate: '2027-03-31',
+      timelineStatus: 'on-track', budgetTotal: 4200000, budgetSpent: 1890000, budgetStatus: 'on-track',
+      percentComplete: 35,
+      deliverables: [
+        {name:'Protocol Amendment v3.0', dueDate:'2026-01-20', status:'complete'},
+        {name:'Interim Analysis Report', dueDate:'2026-04-15', status:'in-progress'},
+        {name:'DSMB Review Package', dueDate:'2026-06-30', status:'pending'},
+        {name:'Final CSR', dueDate:'2027-03-31', status:'pending'}
+      ],
+      risks: [
+        {description:'Patient enrollment below target at 3 sites', severity:3, probability:2, mitigation:'Site remediation plans initiated; 2 backup sites identified'},
+        {description:'Supply chain delay for comparator drug', severity:2, probability:1, mitigation:'6-month buffer stock maintained'}
+      ],
+      issues: [{description:'IRB amendment approval pending at 2 sites', priority:'medium', owner:'Rachel Novak', status:'open'}],
+      notes: 'Flagship oncology program. Board visibility.', archived: false
+    },
+    {
+      id: generateId(), division: 'clintrex', name: 'Rare Disease Natural History Study',
+      description: 'Observational study characterizing disease progression in Friedreich\'s ataxia patients.',
+      sponsor: 'Dr. Lisa Patel', projectLead: 'Andrew Marsh',
+      quarter: 'Q1 2026', startDate: '2025-09-15', endDate: '2026-09-15',
+      timelineStatus: 'on-track', budgetTotal: 890000, budgetSpent: 445000, budgetStatus: 'on-track',
+      percentComplete: 50,
+      deliverables: [
+        {name:'Patient Registry Database', dueDate:'2026-01-31', status:'complete'},
+        {name:'6-Month Interim Report', dueDate:'2026-03-15', status:'in-progress'},
+        {name:'Biomarker Correlation Analysis', dueDate:'2026-06-30', status:'pending'},
+        {name:'Final Study Report', dueDate:'2026-09-15', status:'pending'}
+      ],
+      risks: [
+        {description:'Patient dropout rate exceeds 15%', severity:2, probability:2, mitigation:'Enhanced patient engagement program; travel support funding approved'}
+      ],
+      issues: [],
+      notes: 'Partnership with patient advocacy group.', archived: false
+    },
+    // Modality Solutions
+    {
+      id: generateId(), division: 'modality', name: 'Cold Chain Packaging Validation — BioVax',
+      description: 'Design and validation of -80°C shipping solution for mRNA vaccine distribution.',
+      sponsor: 'Karen Liu', projectLead: 'Tom Brewer',
+      quarter: 'Q1 2026', startDate: '2025-12-01', endDate: '2026-05-31',
+      timelineStatus: 'on-track', budgetTotal: 560000, budgetSpent: 245000, budgetStatus: 'on-track',
+      percentComplete: 44,
+      deliverables: [
+        {name:'Thermal Design Specification', dueDate:'2026-01-15', status:'complete'},
+        {name:'Prototype Fabrication', dueDate:'2026-02-28', status:'complete'},
+        {name:'ISTA 7E Qualification Testing', dueDate:'2026-04-15', status:'in-progress'},
+        {name:'Validation Report & Regulatory Filing', dueDate:'2026-05-31', status:'pending'}
+      ],
+      risks: [
+        {description:'PCM material supplier lead time increase', severity:2, probability:2, mitigation:'Dual-sourcing agreement in place'},
+        {description:'Thermal excursion during summer profile testing', severity:3, probability:1, mitigation:'Additional insulation layer designed as contingency'}
+      ],
+      issues: [],
+      notes: 'Fast-track program tied to client FDA submission timeline.', archived: false
+    },
+    {
+      id: generateId(), division: 'modality', name: 'Medical Device Packaging Redesign',
+      description: 'Sustainable packaging redesign for Class III cardiac implant device family.',
+      sponsor: 'Robert Allen', projectLead: 'Jessica Huang',
+      quarter: 'Q2 2026', startDate: '2026-04-01', endDate: '2026-10-31',
+      timelineStatus: 'on-track', budgetTotal: 380000, budgetSpent: 0, budgetStatus: 'on-track',
+      percentComplete: 0,
+      deliverables: [
+        {name:'Current State Assessment', dueDate:'2026-05-15', status:'pending'},
+        {name:'Sustainable Material Evaluation', dueDate:'2026-06-30', status:'pending'},
+        {name:'Design Verification Testing', dueDate:'2026-09-15', status:'pending'},
+        {name:'Submission-Ready Documentation', dueDate:'2026-10-31', status:'pending'}
+      ],
+      risks: [
+        {description:'Sterile barrier compatibility with new materials', severity:3, probability:2, mitigation:'Early-stage accelerated aging tests planned'}
+      ],
+      issues: [],
+      notes: 'Part of client ESG initiative. High executive visibility.', archived: false
+    },
+    // Design Science
+    {
+      id: generateId(), division: 'designscience', name: 'Autoinjector HFE/UE Study',
+      description: 'Formative and summative human factors engineering study for novel autoinjector device.',
+      sponsor: 'Dr. Mark Stevens', projectLead: 'Nicole Park',
+      quarter: 'Q1 2026', startDate: '2025-10-01', endDate: '2026-04-30',
+      timelineStatus: 'at-risk', budgetTotal: 520000, budgetSpent: 390000, budgetStatus: 'at-risk',
+      percentComplete: 68,
+      deliverables: [
+        {name:'Task Analysis Report', dueDate:'2025-12-15', status:'complete'},
+        {name:'Formative Study Report (Round 2)', dueDate:'2026-02-15', status:'complete'},
+        {name:'Summative Study Protocol', dueDate:'2026-03-15', status:'in-progress'},
+        {name:'HFE/UE Summary Report for FDA', dueDate:'2026-04-30', status:'pending'}
+      ],
+      risks: [
+        {description:'Participant recruitment challenges for summative study', severity:2, probability:3, mitigation:'Expanded recruitment agencies; increased honorarium approved'},
+        {description:'Use error pattern identified in formative rounds', severity:3, probability:2, mitigation:'Design modification proposed; client reviewing impact on device program'}
+      ],
+      issues: [{description:'Client requested additional pediatric subgroup in summative', priority:'high', owner:'Nicole Park', status:'open'}],
+      notes: 'FDA pre-submission meeting scheduled for May.', archived: false
+    },
+    {
+      id: generateId(), division: 'designscience', name: 'SaMD UI/UX Usability Program',
+      description: 'Full usability engineering program for Software as a Medical Device diabetes management app.',
+      sponsor: 'Anna Reeves', projectLead: 'Chris Yamamoto',
+      quarter: 'Q1 2026', startDate: '2026-01-15', endDate: '2026-07-31',
+      timelineStatus: 'delayed', budgetTotal: 340000, budgetSpent: 85000, budgetStatus: 'on-track',
+      percentComplete: 18,
+      deliverables: [
+        {name:'Use Specification', dueDate:'2026-02-28', status:'in-progress'},
+        {name:'UI Design Mockups', dueDate:'2026-03-31', status:'pending'},
+        {name:'Formative Usability Study', dueDate:'2026-05-30', status:'pending'},
+        {name:'IEC 62366-1 Compliance Report', dueDate:'2026-07-31', status:'pending'}
+      ],
+      risks: [
+        {description:'Regulatory pathway uncertainty (SaMD classification)', severity:3, probability:2, mitigation:'Pre-sub feedback anticipated; modular approach allows pivot'},
+        {description:'Client software development delays affect prototype availability', severity:2, probability:3, mitigation:'Wireframe-based study fallback plan ready'}
+      ],
+      issues: [{description:'Kickoff delayed 3 weeks due to client contract finalization', priority:'medium', owner:'Chris Yamamoto', status:'resolved'}],
+      notes: 'De Novo 510(k) pathway. Complex regulatory landscape.', archived: false
+    },
+    // Suttons Creek
+    {
+      id: generateId(), division: 'suttonscreek', name: 'Portfolio Company Operational Assessment',
+      description: 'Comprehensive operational due diligence for potential CRO acquisition target.',
+      sponsor: 'Parth Patel', projectLead: 'Megan Fitzgerald',
+      quarter: 'Q1 2026', startDate: '2026-01-20', endDate: '2026-03-31',
+      timelineStatus: 'on-track', budgetTotal: 175000, budgetSpent: 120000, budgetStatus: 'on-track',
+      percentComplete: 78,
+      deliverables: [
+        {name:'Financial Model & Projections', dueDate:'2026-02-15', status:'complete'},
+        {name:'Operational Capability Assessment', dueDate:'2026-03-01', status:'complete'},
+        {name:'Integration Feasibility Report', dueDate:'2026-03-20', status:'in-progress'},
+        {name:'Board Recommendation Deck', dueDate:'2026-03-31', status:'pending'}
+      ],
+      risks: [
+        {description:'Target company data room access limitations', severity:2, probability:1, mitigation:'NDA expanded; alternative data sources identified'},
+        {description:'Competitive bidder accelerates timeline', severity:3, probability:2, mitigation:'Fast-track option prepared; key analyses prioritized'}
+      ],
+      issues: [],
+      notes: 'Confidential — board-level only. Codename: Project Alpine.', archived: false
+    },
+    {
+      id: generateId(), division: 'suttonscreek', name: 'Cross-Division Synergy Analysis',
+      description: 'Assessment of revenue synergy opportunities across BlueRidge portfolio companies.',
+      sponsor: 'Parth Patel', projectLead: 'Derek Olson',
+      quarter: 'Q1 2026', startDate: '2026-02-01', endDate: '2026-05-31',
+      timelineStatus: 'on-track', budgetTotal: 95000, budgetSpent: 28000, budgetStatus: 'on-track',
+      percentComplete: 25,
+      deliverables: [
+        {name:'Division Capability Mapping', dueDate:'2026-03-01', status:'complete'},
+        {name:'Cross-Sell Opportunity Matrix', dueDate:'2026-04-15', status:'in-progress'},
+        {name:'Revenue Synergy Model', dueDate:'2026-05-15', status:'pending'},
+        {name:'Executive Summary & Roadmap', dueDate:'2026-05-31', status:'pending'}
+      ],
+      risks: [
+        {description:'Division leadership engagement varies', severity:1, probability:2, mitigation:'COO-sponsored initiative; monthly steering committee meetings'}
+      ],
+      issues: [],
+      notes: 'Strategic initiative for FY2026 planning.', archived: false
+    },
+    // BlueRidge Corporate Services
+    {
+      id: generateId(), division: 'corpservices', name: 'Enterprise ERP Migration',
+      description: 'Migration from legacy financial systems to unified ERP platform across all BlueRidge divisions.',
+      sponsor: 'CFO Office', projectLead: 'Sandra Mitchell',
+      quarter: 'Q1 2026', startDate: '2025-10-01', endDate: '2026-06-30',
+      timelineStatus: 'at-risk', budgetTotal: 1250000, budgetSpent: 625000, budgetStatus: 'at-risk',
+      percentComplete: 45,
+      deliverables: [
+        {name:'Requirements & Gap Analysis', dueDate:'2025-12-15', status:'complete'},
+        {name:'Data Migration Plan', dueDate:'2026-02-15', status:'complete'},
+        {name:'UAT Phase 1 (Finance)', dueDate:'2026-04-15', status:'in-progress'},
+        {name:'Go-Live & Hypercare', dueDate:'2026-06-30', status:'pending'}
+      ],
+      risks: [
+        {description:'Data quality issues in legacy system migration', severity:3, probability:2, mitigation:'Dedicated data cleansing team; automated validation scripts'},
+        {description:'Division-level resistance to process changes', severity:2, probability:3, mitigation:'Change management program with division champions; COO sponsorship'}
+      ],
+      issues: [{description:'ToxStrategies legacy GL codes require manual mapping', priority:'medium', owner:'Sandra Mitchell', status:'open'}],
+      notes: 'Cross-division impact. Weekly steering committee with division CFOs.', archived: false
+    },
+    {
+      id: generateId(), division: 'corpservices', name: 'Cybersecurity Compliance Program',
+      description: 'Implementation of NIST CSF 2.0 framework and SOC 2 Type II certification across BlueRidge entities.',
+      sponsor: 'General Counsel', projectLead: 'James Kowalski',
+      quarter: 'Q1 2026', startDate: '2026-01-06', endDate: '2026-09-30',
+      timelineStatus: 'on-track', budgetTotal: 480000, budgetSpent: 120000, budgetStatus: 'on-track',
+      percentComplete: 22,
+      deliverables: [
+        {name:'Risk Assessment & Gap Analysis', dueDate:'2026-02-28', status:'complete'},
+        {name:'Policy & Procedure Documentation', dueDate:'2026-04-30', status:'in-progress'},
+        {name:'Technical Control Implementation', dueDate:'2026-07-31', status:'pending'},
+        {name:'SOC 2 Audit Readiness Review', dueDate:'2026-09-30', status:'pending'}
+      ],
+      risks: [
+        {description:'Third-party vendor compliance gaps', severity:3, probability:2, mitigation:'Vendor risk assessment program initiated; contract amendments in progress'},
+        {description:'Resource availability during audit prep', severity:2, probability:2, mitigation:'External consultant on retainer for surge support'}
+      ],
+      issues: [],
+      notes: 'Board mandate. Required for upcoming client RFP eligibility.', archived: false
+    },
+    // Additional completed / archived project for demo
+    {
+      id: generateId(), division: 'toxstrategies', name: 'Cosmetics Safety Assessment — EU Dossier',
+      description: 'Safety assessment dossier for cosmetics product line entering EU market.',
+      sponsor: 'Sarah Kim', projectLead: 'Laura Bennett',
+      quarter: 'Q4 2025', startDate: '2025-07-01', endDate: '2025-12-15',
+      timelineStatus: 'completed', budgetTotal: 210000, budgetSpent: 198000, budgetStatus: 'on-track',
+      percentComplete: 100,
+      deliverables: [
+        {name:'Ingredient Hazard Profiles', dueDate:'2025-08-30', status:'complete'},
+        {name:'Exposure Assessment', dueDate:'2025-10-15', status:'complete'},
+        {name:'SCCS-Format Safety Report', dueDate:'2025-11-30', status:'complete'},
+        {name:'Responsible Person Package', dueDate:'2025-12-15', status:'complete'}
+      ],
+      risks: [],
+      issues: [],
+      notes: 'Successfully delivered. Client approved for market entry.', archived: true
+    },
+    {
+      id: generateId(), division: 'clintrex', name: 'Phase II CNS Trial — NEURAL-205',
+      description: 'Phase II dose-ranging study for novel Alzheimer\'s disease therapeutic.',
+      sponsor: 'Dr. James Wright', projectLead: 'Rachel Novak',
+      quarter: 'Q2 2026', startDate: '2026-03-01', endDate: '2027-06-30',
+      timelineStatus: 'on-track', budgetTotal: 3100000, budgetSpent: 310000, budgetStatus: 'on-track',
+      percentComplete: 8,
+      deliverables: [
+        {name:'Protocol Finalization', dueDate:'2026-04-15', status:'in-progress'},
+        {name:'Site Selection & Activation', dueDate:'2026-06-30', status:'pending'},
+        {name:'First Patient In', dueDate:'2026-08-31', status:'pending'},
+        {name:'Interim Analysis', dueDate:'2027-03-31', status:'pending'}
+      ],
+      risks: [
+        {description:'Competitive enrollment landscape in AD space', severity:2, probability:3, mitigation:'Differentiated protocol design; patient-friendly visit schedule'},
+        {description:'Biomarker assay validation timeline', severity:2, probability:2, mitigation:'Parallel validation track initiated'}
+      ],
+      issues: [],
+      notes: 'High-priority pipeline asset for sponsor.', archived: false
+    }
+  ];
+}
+
+function loadSampleData() {
+  state.projects = buildSampleProjects();
+  saveData();
+  renderAll();
+  showToast('Sample data loaded — ' + state.projects.length + ' projects');
+}
+
+function confirmClearData() {
+  openConfirm('Clear All Data', 'This will remove all projects including any custom data. This cannot be undone. Continue?', () => {
+    state.projects = [];
+    saveData();
+    renderAll();
+    showToast('All project data cleared');
+  });
+}
+
+// ===================================================================
+// QUARTER HELPERS
+// ===================================================================
+function getQuartersRange() {
+  const now = new Date();
+  const currentYear = now.getFullYear();
+  const quarters = [];
+  for (let y = currentYear - 1; y <= currentYear + 1; y++) {
+    for (let q = 1; q <= 4; q++) {
+      quarters.push(`Q${q} ${y}`);
+    }
+  }
+  return quarters;
+}
+
+function getCurrentQuarter() {
+  const now = new Date();
+  return `Q${Math.ceil((now.getMonth()+1)/3)} ${now.getFullYear()}`;
+}
+
+function selectAllQuarters() {
+  state.showCurrentActive = false;
+  state.selectedQuarters = getQuartersRange();
+  renderQuarterGrid();
+  updateQuarterButtons();
+  applyFilters();
+}
+
+function selectCurrentQuarter() {
+  state.showCurrentActive = true;
+  state.selectedQuarters = [];
+  renderQuarterGrid();
+  updateQuarterButtons();
+  applyFilters();
+}
+
+function clearQuarters() {
+  state.showCurrentActive = false;
+  state.selectedQuarters = [];
+  renderQuarterGrid();
+  updateQuarterButtons();
+  applyFilters();
+}
+
+function toggleIncludeArchived() {
+  state.showArchived = !state.showArchived;
+  updateQuarterButtons();
+  applyFilters();
+}
+
+function updateQuarterButtons() {
+  const currentBtn = document.getElementById('currentBtn');
+  if (currentBtn) {
+    currentBtn.className = state.showCurrentActive ? 'btn btn-primary btn-sm' : 'btn btn-secondary btn-sm';
+  }
+  const archBtn = document.getElementById('includeArchivedBtn');
+  if (archBtn) {
+    archBtn.className = state.showArchived
+      ? 'btn btn-primary btn-sm'
+      : 'btn btn-secondary btn-sm';
+    archBtn.style.cssText = 'width:100%;justify-content:center;gap:6px';
+  }
+}
+
+function toggleQuarter(q) {
+  state.showCurrentActive = false;
+  const idx = state.selectedQuarters.indexOf(q);
+  if (idx > -1) state.selectedQuarters.splice(idx, 1);
+  else state.selectedQuarters.push(q);
+  renderQuarterGrid();
+  updateQuarterButtons();
+  applyFilters();
+}
+
+function renderQuarterGrid() {
+  const grid = document.getElementById('quarterGrid');
+  const quarters = getQuartersRange();
+  let html = '';
+  let lastYear = '';
+  quarters.forEach(q => {
+    const year = q.split(' ')[1];
+    if (year !== lastYear) {
+      html += `<div class="year-row"><span class="year-label">${year}</span><span class="year-line"></span></div>`;
+      lastYear = year;
+    }
+    const active = state.selectedQuarters.includes(q) ? 'active' : '';
+    html += `<div class="quarter-chip ${active}" onclick="toggleQuarter('${q}')">${q.split(' ')[0]}</div>`;
+  });
+  grid.innerHTML = html;
+}
+
+// ===================================================================
+// FILTERING
+// ===================================================================
+function getProjectQuarterFromStart(p) {
+  if (!p.startDate) return p.quarter; // fallback to quarter field
+  // Parse YYYY-MM-DD without timezone shift
+  const parts = p.startDate.split('-');
+  const month = parseInt(parts[1], 10);
+  const year = parseInt(parts[0], 10);
+  return `Q${Math.ceil(month / 3)} ${year}`;
+}
+
+function getFilteredProjects() {
+  return state.projects.filter(p => {
+    // Archive filtering: exclude archived unless Include Archived is on
+    if (!state.showArchived && p.archived) return false;
+    // Division filtering
+    if (state.currentView !== 'enterprise' && p.division !== state.currentView) return false;
+    // "Current" mode: show all active projects, skip quarter filter
+    if (state.showCurrentActive) {
+      // Show all active; also show archived if toggled on
+      // No quarter filter applied in Current mode
+    } else {
+      // Quarter filter uses project start date
+      if (state.selectedQuarters.length > 0) {
+        const pQuarter = getProjectQuarterFromStart(p);
+        if (!state.selectedQuarters.includes(pQuarter)) return false;
+      }
+    }
+    if (state.statusFilter !== 'all' && p.timelineStatus !== state.statusFilter) return false;
+    if (state.searchQuery) {
+      const q = state.searchQuery.toLowerCase();
+      const searchFields = [p.name, p.description, p.sponsor, p.projectLead, p.notes].join(' ').toLowerCase();
+      if (!searchFields.includes(q)) return false;
+    }
+    return true;
+  });
+}
+
+function applyFilters() {
+  state.searchQuery = document.getElementById('searchInput').value;
+  state.statusFilter = document.getElementById('statusFilter').value;
+  renderMainContent();
+  renderNavCounts();
+}
+
+// ===================================================================
+// NAVIGATION
+// ===================================================================
+function switchView(view) {
+  state.currentView = view;
+  document.querySelectorAll('#navViews .nav-item, #navDivisions .nav-item').forEach(el => el.classList.remove('active'));
+  document.querySelector(`[data-view="${view}"]`)?.classList.add('active');
+  renderMainContent();
+}
+
+function renderNavDivisions() {
+  const nav = document.getElementById('navDivisions');
+  nav.innerHTML = DIVISIONS.map(d => {
+    const count = state.projects.filter(p => p.division === d.id && !p.archived).length;
+    return `<div class="nav-item" data-view="${d.id}" onclick="switchView('${d.id}')">
+      <span class="dot" style="background:${d.color}"></span>
+      ${d.name}
+      <span class="count">${count}</span>
+    </div>`;
+  }).join('');
+}
+
+function renderNavCounts() {
+  DIVISIONS.forEach(d => {
+    const count = state.projects.filter(p => p.division === d.id && !p.archived).length;
+    const el = document.querySelector(`[data-view="${d.id}"] .count`);
+    if (el) el.textContent = count;
+  });
+}
+
+
+// ===================================================================
+// RENDER: MAIN CONTENT
+// ===================================================================
+function renderMainContent() {
+  const main = document.getElementById('mainContent');
+  if (state.currentView === 'enterprise') {
+    renderEnterpriseView(main);
+  } else {
+    renderDivisionView(main);
+  }
+}
+
+function renderAll() {
+  renderNavDivisions();
+  renderQuarterGrid();
+  renderNavCounts();
+  renderMainContent();
+  // Re-highlight active nav
+  document.querySelectorAll('#navViews .nav-item, #navDivisions .nav-item').forEach(el => el.classList.remove('active'));
+  document.querySelector(`[data-view="${state.currentView}"]`)?.classList.add('active');
+}
+
+// ===================================================================
+// ENTERPRISE VIEW
+// ===================================================================
+function renderEnterpriseView(container) {
+  const activeProjects = state.projects.filter(p => !p.archived);
+  const filtered = getFilteredProjects();
+
+  // KPIs
+  const totalActive = activeProjects.length;
+  const onTrack = activeProjects.filter(p => p.timelineStatus === 'on-track').length;
+  const atRisk = activeProjects.filter(p => p.timelineStatus === 'at-risk' || p.timelineStatus === 'delayed').length;
+  const totalBudget = activeProjects.reduce((s, p) => s + (p.budgetTotal || 0), 0);
+  const totalSpent = activeProjects.reduce((s, p) => s + (p.budgetSpent || 0), 0);
+  const avgCompletion = totalActive ? Math.round(activeProjects.reduce((s, p) => s + (p.percentComplete || 0), 0) / totalActive) : 0;
+  const highRisks = activeProjects.reduce((s, p) => s + (p.risks || []).filter(r => r.severity * r.probability >= 7).length, 0);
+
+  let html = `
+    <div class="kpi-strip">
+      <div class="kpi-card" onclick="openDrilldown('active')" title="Click to view all active projects">
+        <span class="kpi-label">Active Projects</span>
+        <span class="kpi-value">${totalActive}</span>
+        <span class="kpi-sub">across ${DIVISIONS.length} divisions
+          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="margin-left:auto"><polyline points="9 18 15 12 9 6"/></svg>
+        </span>
+      </div>
+      <div class="kpi-card" onclick="openDrilldown('ontrack')" title="Click to view on-track projects">
+        <span class="kpi-label">On Track</span>
+        <span class="kpi-value" style="color:var(--status-green)">${onTrack}</span>
+        <div class="kpi-bar"><div class="kpi-bar-fill" style="width:${totalActive ? (onTrack/totalActive*100) : 0}%;background:var(--status-green)"></div></div>
+      </div>
+      <div class="kpi-card" onclick="openDrilldown('atrisk')" title="Click to view at-risk and delayed projects">
+        <span class="kpi-label">At Risk / Delayed</span>
+        <span class="kpi-value" style="color:${atRisk > 0 ? 'var(--status-red)' : 'var(--status-green)'}">${atRisk}</span>
+        <div class="kpi-bar"><div class="kpi-bar-fill" style="width:${totalActive ? (atRisk/totalActive*100) : 0}%;background:var(--status-red)"></div></div>
+      </div>
+      <div class="kpi-card" onclick="openDrilldown('budget')" title="Click to view budget breakdown">
+        <span class="kpi-label">Budget Utilization</span>
+        <span class="kpi-value">${totalBudget ? Math.round(totalSpent/totalBudget*100) : 0}%</span>
+        <span class="kpi-sub">$${formatM(totalSpent)} of $${formatM(totalBudget)}
+          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="margin-left:auto"><polyline points="9 18 15 12 9 6"/></svg>
+        </span>
+        <div class="kpi-bar"><div class="kpi-bar-fill" style="width:${totalBudget ? (totalSpent/totalBudget*100) : 0}%;background:var(--br-blue)"></div></div>
+      </div>
+      <div class="kpi-card" onclick="openDrilldown('completion')" title="Click to view completion by project">
+        <span class="kpi-label">Avg Completion</span>
+        <span class="kpi-value">${avgCompletion}%</span>
+        <div class="kpi-bar"><div class="kpi-bar-fill" style="width:${avgCompletion}%;background:var(--br-green)"></div></div>
+      </div>
+      <div class="kpi-card" onclick="openDrilldown('highrisk')" title="Click to view high-severity risks">
+        <span class="kpi-label">High Risks</span>
+        <span class="kpi-value" style="color:${highRisks > 0 ? 'var(--status-red)' : 'var(--status-green)'}">${highRisks}</span>
+        <span class="kpi-sub">score ≥ 7
+          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="margin-left:auto"><polyline points="9 18 15 12 9 6"/></svg>
+        </span>
+      </div>
+    </div>
+
+    <div class="projects-header">
+      <h2>Division Overview</h2>
+    </div>
+    <div class="division-grid">
+  `;
+
+  DIVISIONS.forEach(div => {
+    const divProjects = filtered.filter(p => p.division === div.id);
+    const divAll = activeProjects.filter(p => p.division === div.id);
+    const divOnTrack = divAll.filter(p => p.timelineStatus === 'on-track').length;
+    const divAtRisk = divAll.filter(p => p.timelineStatus === 'at-risk' || p.timelineStatus === 'delayed').length;
+    const divBudgetTotal = divAll.reduce((s, p) => s + (p.budgetTotal || 0), 0);
+    const divBudgetSpent = divAll.reduce((s, p) => s + (p.budgetSpent || 0), 0);
+
+    html += `
+      <div class="division-card" onclick="switchView('${div.id}')">
+        <div class="division-card-header">
+          <h3><span class="dot" style="background:${div.color}"></span>${div.name}</h3>
+          <span class="badge badge-blue">${divAll.length} projects</span>
+        </div>
+        <div class="division-card-body">
+          <div class="division-stats">
+            <div class="division-stat"><div class="val" style="color:var(--status-green)">${divOnTrack}</div><div class="lab">On Track</div></div>
+            <div class="division-stat"><div class="val" style="color:${divAtRisk > 0 ? 'var(--status-red)' : 'var(--text-muted)'}">${divAtRisk}</div><div class="lab">At Risk</div></div>
+            <div class="division-stat"><div class="val">${divBudgetTotal ? Math.round(divBudgetSpent/divBudgetTotal*100) : 0}%</div><div class="lab">Budget Used</div></div>
+          </div>
+          <div class="mini-project-list">
+            ${divProjects.slice(0, 4).map(p => `
+              <div class="mini-project">
+                <span class="status-dot" style="background:${statusColor(p.timelineStatus)}"></span>
+                <span class="name">${esc(p.name)}</span>
+                <span class="pct">${p.percentComplete}%</span>
+              </div>
+            `).join('')}
+            ${divProjects.length === 0 ? '<div style="font-size:12px;color:var(--text-muted);text-align:center;padding:8px">No projects match filters</div>' : ''}
+          </div>
+        </div>
+      </div>
+    `;
+  });
+
+  html += '</div>';
+  container.innerHTML = html;
+}
+
+// ===================================================================
+// DIVISION VIEW
+// ===================================================================
+function renderDivisionView(container) {
+  const div = DIVISIONS.find(d => d.id === state.currentView);
+  if (!div) return;
+  const projects = getFilteredProjects();
+
+  let html = `
+    <div class="projects-header">
+      <h2 style="display:flex;align-items:center;gap:10px">
+        <span class="dot" style="background:${div.color};width:12px;height:12px;border-radius:50%;display:inline-block"></span>
+        ${div.name}
+        <span style="font-size:14px;font-weight:400;color:var(--text-muted)">${projects.length} project${projects.length !== 1 ? 's' : ''}</span>
+      </h2>
+      <div style="display:flex;gap:8px;align-items:center">
+        <button class="btn btn-secondary btn-sm" onclick="exportDivisionPPTX('${div.id}')" title="Export division summary to PowerPoint">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="3" width="20" height="14" rx="2" ry="2"/><line x1="8" y1="21" x2="16" y2="21"/><line x1="12" y1="17" x2="12" y2="21"/></svg>
+          Export PPTX
+        </button>
+        <div class="view-toggle">
+          <button class="${state.projectViewMode === 'cards' ? 'active' : ''}" onclick="setViewMode('cards')">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/></svg>
+          </button>
+          <button class="${state.projectViewMode === 'table' ? 'active' : ''}" onclick="setViewMode('table')">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/></svg>
+          </button>
+        </div>
+      </div>
+    </div>
+  `;
+
+  if (projects.length === 0) {
+    html += `
+      <div class="empty-state">
+        <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M9 17H5a2 2 0 01-2-2V5a2 2 0 012-2h14a2 2 0 012 2v4"/><path d="M15 19l2 2 4-4"/></svg>
+        <h3>No Projects Found</h3>
+        <p>Adjust your filters or create a new project for this division.</p>
+      </div>
+    `;
+  } else if (state.projectViewMode === 'cards') {
+    html += '<div class="project-cards">';
+    projects.forEach(p => {
+      const topRisk = getTopRisk(p);
+      const delComplete = (p.deliverables || []).filter(d => d.status === 'complete').length;
+      const delTotal = (p.deliverables || []).length;
+      html += `
+        <div class="project-card" onclick="openDetail('${p.id}')">
+          <div class="project-card-top" style="background:${div.color}"></div>
+          <div class="project-card-body">
+            <div class="project-card-title">${esc(p.name)}</div>
+            <div class="project-card-meta">
+              <span>
+                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+                ${esc(p.projectLead)}
+              </span>
+              <span>
+                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+                ${p.quarter}
+              </span>
+            </div>
+            <div class="project-card-statuses">
+              ${timelineBadge(p.timelineStatus)}
+              ${budgetBadge(p.budgetStatus)}
+              ${p.archived ? '<span class="badge badge-gray"><span class="badge-dot"></span>Archived</span>' : ''}
+            </div>
+            <div class="progress-wrap">
+              <div class="progress" style="flex:1"><div class="progress-fill" style="width:${p.percentComplete}%;background:${progressColor(p.percentComplete, p.timelineStatus)}"></div></div>
+              <span class="progress-pct">${p.percentComplete}%</span>
+            </div>
+            <div style="font-size:12px;color:var(--text-secondary)">
+              <strong>Sponsor:</strong> ${esc(p.sponsor)}
+            </div>
+          </div>
+          <div class="project-card-bottom">
+            <span class="project-card-deliverables">${delComplete}/${delTotal} deliverables</span>
+            <span class="project-card-risk">${topRisk !== null
+              ? `Risk: <span class="risk-score risk-${riskLevel(topRisk)}" style="width:22px;height:22px;font-size:11px">${topRisk}</span>`
+              : '<span style="color:var(--status-green)">No risks</span>'
+            }</span>
+          </div>
+        </div>
+      `;
+    });
+    html += '</div>';
+  } else {
+    // Table view
+    html += `
+      <div style="overflow-x:auto">
+        <table class="project-table">
+          <thead><tr>
+            <th>Project</th>
+            <th>Lead</th>
+            <th>Quarter</th>
+            <th>Timeline</th>
+            <th>Budget</th>
+            <th>Progress</th>
+            <th>Risk</th>
+            <th>Deliverables</th>
+          </tr></thead>
+          <tbody>
+    `;
+    projects.forEach(p => {
+      const topRisk = getTopRisk(p);
+      const delComplete = (p.deliverables || []).filter(d => d.status === 'complete').length;
+      const delTotal = (p.deliverables || []).length;
+      html += `
+        <tr onclick="openDetail('${p.id}')">
+          <td><strong>${esc(p.name)}</strong><br><span style="font-size:11px;color:var(--text-muted)">${esc(p.sponsor)}</span></td>
+          <td>${esc(p.projectLead)}</td>
+          <td>${p.quarter}</td>
+          <td>${timelineBadge(p.timelineStatus)}</td>
+          <td>
+            <div class="budget-bar">
+              <div class="progress"><div class="progress-fill" style="width:${p.budgetTotal ? (p.budgetSpent/p.budgetTotal*100) : 0}%;background:${budgetColor(p.budgetStatus)}"></div></div>
+              <span class="budget-amounts">$${formatK(p.budgetSpent)} / $${formatK(p.budgetTotal)}</span>
+            </div>
+          </td>
+          <td>
+            <div class="progress-wrap">
+              <div class="progress"><div class="progress-fill" style="width:${p.percentComplete}%;background:${progressColor(p.percentComplete, p.timelineStatus)}"></div></div>
+              <span class="progress-pct">${p.percentComplete}%</span>
+            </div>
+          </td>
+          <td>${topRisk !== null ? `<span class="risk-score risk-${riskLevel(topRisk)}">${topRisk}</span>` : '<span style="color:var(--text-muted)">—</span>'}</td>
+          <td>${delComplete}/${delTotal}</td>
+        </tr>
+      `;
+    });
+    html += '</tbody></table></div>';
+  }
+
+  container.innerHTML = html;
+}
+
+function setViewMode(mode) {
+  state.projectViewMode = mode;
+  renderMainContent();
+}
+
+// ===================================================================
+// POWERPOINT EXPORT
+// ===================================================================
+function exportDivisionPPTX(divisionId) {
+  if (typeof PptxGenJS === 'undefined') {
+    showToast('PptxGenJS library not loaded. Ensure pptxgen.bundle.js is in the same folder.', 'error');
+    return;
+  }
+
+  const div = DIVISIONS.find(d => d.id === divisionId);
+  if (!div) return;
+  const projects = state.projects.filter(p => p.division === divisionId && !p.archived);
+  if (projects.length === 0) {
+    showToast('No active projects to export for ' + div.name, 'error');
+    return;
+  }
+
+  // Resolve CSS variable colors to hex
+  const colorMap = {
+    'var(--div-tox)':'0067B1','var(--div-clin)':'7C3AED','var(--div-mod)':'0891B2',
+    'var(--div-design)':'D97706','var(--div-suttons)':'059669','var(--div-corp)':'64748B'
+  };
+  const BLUE = '0067B1';
+  const DARK = '00457C';
+  const GREEN = '8CB82B';
+  const divHex = colorMap[div.color] || BLUE;
+  const WHITE = 'FFFFFF';
+  const LIGHT_BG = 'F3F6FA';
+  const GRAY = '5A6B7F';
+  const MUTED = '8E9BAD';
+  const RED_HEX = 'EF4444';
+  const AMBER_HEX = 'F59E0B';
+  const GREEN_HEX = '22C55E';
+  const BLUE_HEX = '3B82F6';
+
+  function statusHex(s) {
+    const m = {'on-track':GREEN_HEX,'at-risk':AMBER_HEX,'delayed':RED_HEX,'completed':BLUE_HEX,'on-hold':MUTED,'over-budget':RED_HEX};
+    return m[s] || MUTED;
+  }
+  function statusLabel(s) {
+    const m = {'on-track':'On Track','at-risk':'At Risk','delayed':'Delayed','completed':'Completed','on-hold':'On Hold','over-budget':'Over Budget'};
+    return m[s] || s;
+  }
+  function riskLevelHex(score) {
+    if (score >= 7) return RED_HEX;
+    if (score >= 4) return AMBER_HEX;
+    return GREEN_HEX;
+  }
+  function delStatusLabel(s) {
+    return {'complete':'Complete','in-progress':'In Progress','pending':'Pending','overdue':'Overdue'}[s] || s;
+  }
+  function delStatusHex(s) {
+    return {'complete':GREEN_HEX,'in-progress':BLUE_HEX,'pending':MUTED,'overdue':RED_HEX}[s] || MUTED;
+  }
+  function fmtBudget(n) {
+    if (!n) return '$0';
+    if (n >= 1000000) return '$' + (n/1000000).toFixed(2) + 'M';
+    if (n >= 1000) return '$' + (n/1000).toFixed(0) + 'K';
+    return '$' + n.toLocaleString();
+  }
+
+  const pptx = new PptxGenJS();
+  pptx.defineLayout({name:'WIDE', width:13.333, height:7.5});
+  pptx.layout = 'WIDE';
+  pptx.author = 'BlueRidge Life Sciences';
+  pptx.subject = div.name + ' Project Summary';
+  pptx.title = div.name + ' — Project Dashboard Export';
+
+  // ---- TITLE SLIDE ----
+  const title = pptx.addSlide();
+  // Top color bar
+  title.addShape(pptx.ShapeType.rect, {x:0, y:0, w:'100%', h:0.12, fill:{color:divHex}});
+  // Bottom accent bar
+  title.addShape(pptx.ShapeType.rect, {x:0, y:7.38, w:'100%', h:0.12, fill:{color:GREEN}});
+  // Large division name
+  title.addText(div.name, {x:0.8, y:2.0, w:11.7, h:1.2, fontSize:40, fontFace:'Segoe UI', bold:true, color:DARK, align:'left'});
+  // Subtitle
+  title.addText('Project Status Summary', {x:0.8, y:3.1, w:11.7, h:0.6, fontSize:22, fontFace:'Segoe UI', color:GRAY, align:'left'});
+  // Date
+  title.addText(new Date().toLocaleDateString('en-US', {year:'numeric', month:'long', day:'numeric'}), {x:0.8, y:3.7, w:11.7, h:0.5, fontSize:14, fontFace:'Segoe UI', color:MUTED, align:'left'});
+  // Project count summary
+  const onTrack = projects.filter(p => p.timelineStatus === 'on-track').length;
+  const atRisk = projects.filter(p => p.timelineStatus === 'at-risk' || p.timelineStatus === 'delayed').length;
+  const totalBudget = projects.reduce((s,p) => s + (p.budgetTotal||0), 0);
+  const totalSpent = projects.reduce((s,p) => s + (p.budgetSpent||0), 0);
+  const avgPct = projects.length ? Math.round(projects.reduce((s,p) => s + (p.percentComplete||0), 0) / projects.length) : 0;
+
+  // Summary KPI boxes on title slide — 2 rows: 3 on top, 3 on bottom
+  const highRiskCount = projects.reduce((s,p) => s + (p.risks||[]).filter(r => r.severity * r.probability >= 7).length, 0);
+  const kpis = [
+    {label:'ACTIVE PROJECTS', value:String(projects.length), sub:'across division', color:divHex},
+    {label:'ON TRACK', value:String(onTrack), sub:projects.length ? Math.round(onTrack/projects.length*100)+'% of projects' : '', color:GREEN_HEX},
+    {label:'AT RISK / DELAYED', value:String(atRisk), sub:atRisk > 0 ? 'needs attention' : 'all clear', color:atRisk > 0 ? RED_HEX : GREEN_HEX},
+    {label:'AVG COMPLETION', value:avgPct + '%', sub:'across all projects', color:BLUE},
+    {label:'BUDGET UTILIZATION', value:totalBudget ? Math.round(totalSpent/totalBudget*100)+'%' : '0%', sub:fmtBudget(totalSpent) + ' of ' + fmtBudget(totalBudget), color:DARK},
+    {label:'HIGH RISKS', value:String(highRiskCount), sub:'score \u2265 7', color:highRiskCount > 0 ? RED_HEX : GREEN_HEX}
+  ];
+  const colsPerRow = 3;
+  const kpiW = 3.7;
+  const kpiH = 1.05;
+  const kpiGapX = 0.35;
+  const kpiGapY = 0.2;
+  const kpiStartX = 0.8;
+  const kpiStartY = 4.3;
+  kpis.forEach((k, i) => {
+    const row = Math.floor(i / colsPerRow);
+    const col = i % colsPerRow;
+    const kx = kpiStartX + col * (kpiW + kpiGapX);
+    const ky = kpiStartY + row * (kpiH + kpiGapY);
+    title.addShape(pptx.ShapeType.roundRect, {x:kx, y:ky, w:kpiW, h:kpiH, rectRadius:0.1, fill:{color:WHITE}, line:{color:'E2E8F0', width:1}});
+    title.addText(k.label, {x:kx + 0.2, y:ky + 0.12, w:kpiW - 0.4, h:0.22, fontSize:8, fontFace:'Segoe UI', bold:true, color:MUTED, align:'left'});
+    title.addText(k.value, {x:kx + 0.2, y:ky + 0.3, w:2.0, h:0.55, fontSize:26, fontFace:'Segoe UI', bold:true, color:k.color, align:'left'});
+    if (k.sub) {
+      title.addText(k.sub, {x:kx + 2.0, y:ky + 0.55, w:kpiW - 2.2, h:0.3, fontSize:9, fontFace:'Segoe UI', color:MUTED, align:'right', valign:'middle'});
+    }
+  });
+
+  // BlueRidge branding
+  title.addText('BlueRidge Life Sciences', {x:0.8, y:6.85, w:4, h:0.35, fontSize:11, fontFace:'Segoe UI', bold:true, color:BLUE, align:'left'});
+  title.addText('CONFIDENTIAL', {x:9, y:6.85, w:3.5, h:0.35, fontSize:10, fontFace:'Segoe UI', color:MUTED, align:'right'});
+
+  // ---- PROJECT SLIDES ----
+  projects.forEach((p, pIdx) => {
+    const slide = pptx.addSlide();
+
+    // Top color bar
+    slide.addShape(pptx.ShapeType.rect, {x:0, y:0, w:'100%', h:0.08, fill:{color:divHex}});
+    // Footer
+    slide.addShape(pptx.ShapeType.rect, {x:0, y:7.15, w:'100%', h:0.35, fill:{color:LIGHT_BG}});
+    slide.addText(div.name + '  |  BlueRidge Life Sciences', {x:0.6, y:7.15, w:6, h:0.35, fontSize:8, fontFace:'Segoe UI', color:MUTED, align:'left', valign:'middle'});
+    slide.addText((pIdx + 1) + ' / ' + projects.length, {x:10, y:7.15, w:2.7, h:0.35, fontSize:8, fontFace:'Segoe UI', color:MUTED, align:'right', valign:'middle'});
+
+    // Project title
+    slide.addText(p.name, {x:0.6, y:0.25, w:9.5, h:0.55, fontSize:22, fontFace:'Segoe UI', bold:true, color:DARK});
+    // Description
+    if (p.description) {
+      slide.addText(p.description, {x:0.6, y:0.8, w:12, h:0.4, fontSize:10, fontFace:'Segoe UI', color:GRAY, wrap:true});
+    }
+
+    // ---- STATUS BANNER ----
+    const bannerY = 1.3;
+    slide.addShape(pptx.ShapeType.roundRect, {x:0.6, y:bannerY, w:12.1, h:0.9, rectRadius:0.08, fill:{color:WHITE}, line:{color:'E2E8F0', width:1}});
+
+    // Status items across the banner
+    const items = [
+      {lbl:'SPONSOR', val:p.sponsor || '—'},
+      {lbl:'PROJECT LEAD', val:p.projectLead || '—'},
+      {lbl:'QUARTER', val:p.quarter || '—'},
+      {lbl:'TIMELINE', val:statusLabel(p.timelineStatus), valColor:statusHex(p.timelineStatus)},
+      {lbl:'BUDGET', val:statusLabel(p.budgetStatus), valColor:statusHex(p.budgetStatus)},
+      {lbl:'COMPLETE', val:(p.percentComplete || 0) + '%', valColor:BLUE}
+    ];
+    const itemW = 12.1 / items.length;
+    items.forEach((it, i) => {
+      const ix = 0.6 + i * itemW;
+      slide.addText(it.lbl, {x:ix + 0.15, y:bannerY + 0.1, w:itemW - 0.3, h:0.3, fontSize:8, fontFace:'Segoe UI', bold:true, color:MUTED, align:'left'});
+      slide.addText(it.val, {x:ix + 0.15, y:bannerY + 0.38, w:itemW - 0.3, h:0.35, fontSize:11, fontFace:'Segoe UI', bold:true, color:it.valColor || DARK, align:'left'});
+      // Separator line (except last)
+      if (i < items.length - 1) {
+        slide.addShape(pptx.ShapeType.line, {x:ix + itemW, y:bannerY + 0.15, w:0, h:0.6, line:{color:'E2E8F0', width:0.75}});
+      }
+    });
+
+    // ---- BUDGET BAR ----
+    const budgetY = 2.4;
+    const budgetPct = p.budgetTotal ? Math.min(p.budgetSpent / p.budgetTotal, 1) : 0;
+    slide.addText('BUDGET: ' + fmtBudget(p.budgetSpent) + ' of ' + fmtBudget(p.budgetTotal) + '  (' + Math.round(budgetPct * 100) + '%)', {x:0.6, y:budgetY, w:12.1, h:0.3, fontSize:9, fontFace:'Segoe UI', bold:true, color:GRAY});
+    // Track
+    slide.addShape(pptx.ShapeType.roundRect, {x:0.6, y:budgetY + 0.3, w:12.1, h:0.15, rectRadius:0.05, fill:{color:'E2E8F0'}});
+    // Fill
+    if (budgetPct > 0) {
+      slide.addShape(pptx.ShapeType.roundRect, {x:0.6, y:budgetY + 0.3, w:Math.max(12.1 * budgetPct, 0.15), h:0.15, rectRadius:0.05, fill:{color:statusHex(p.budgetStatus)}});
+    }
+
+    // ---- DELIVERABLES TABLE ----
+    const delY = 3.0;
+    slide.addText('DELIVERABLES', {x:0.6, y:delY, w:5.5, h:0.35, fontSize:10, fontFace:'Segoe UI', bold:true, color:DARK});
+
+    const deliverables = p.deliverables || [];
+    if (deliverables.length > 0) {
+      const delRows = [
+        [{text:'Deliverable', options:{bold:true, fontSize:8, color:MUTED, fill:{color:LIGHT_BG}, align:'left'}},
+         {text:'Due Date', options:{bold:true, fontSize:8, color:MUTED, fill:{color:LIGHT_BG}, align:'center'}},
+         {text:'Status', options:{bold:true, fontSize:8, color:MUTED, fill:{color:LIGHT_BG}, align:'center'}}]
+      ];
+      deliverables.forEach(d => {
+        delRows.push([
+          {text:d.name || '—', options:{fontSize:9, color:DARK, align:'left'}},
+          {text:d.dueDate || '—', options:{fontSize:9, color:GRAY, align:'center'}},
+          {text:delStatusLabel(d.status), options:{fontSize:9, bold:true, color:delStatusHex(d.status), align:'center'}}
+        ]);
+      });
+      slide.addTable(delRows, {
+        x:0.6, y:delY + 0.35, w:6.2,
+        colW:[3.4, 1.3, 1.5],
+        rowH:0.32,
+        border:{type:'solid', pt:0.5, color:'E2E8F0'},
+        fontFace:'Segoe UI',
+        autoPage:false
+      });
+    } else {
+      slide.addText('No deliverables defined', {x:0.6, y:delY + 0.4, w:5.5, h:0.3, fontSize:9, fontFace:'Segoe UI', italic:true, color:MUTED});
+    }
+
+    // ---- RISKS TABLE ----
+    const riskX = 7.2;
+    slide.addText('RISKS', {x:riskX, y:delY, w:5.5, h:0.35, fontSize:10, fontFace:'Segoe UI', bold:true, color:DARK});
+
+    const risks = p.risks || [];
+    if (risks.length > 0) {
+      const riskRows = [
+        [{text:'Risk', options:{bold:true, fontSize:8, color:MUTED, fill:{color:LIGHT_BG}, align:'left'}},
+         {text:'S', options:{bold:true, fontSize:8, color:MUTED, fill:{color:LIGHT_BG}, align:'center'}},
+         {text:'P', options:{bold:true, fontSize:8, color:MUTED, fill:{color:LIGHT_BG}, align:'center'}},
+         {text:'Score', options:{bold:true, fontSize:8, color:MUTED, fill:{color:LIGHT_BG}, align:'center'}}]
+      ];
+      risks.forEach(r => {
+        const score = (r.severity || 1) * (r.probability || 1);
+        riskRows.push([
+          {text:r.description || '—', options:{fontSize:8, color:DARK, align:'left'}},
+          {text:String(r.severity || 1), options:{fontSize:9, bold:true, color:GRAY, align:'center'}},
+          {text:String(r.probability || 1), options:{fontSize:9, bold:true, color:GRAY, align:'center'}},
+          {text:String(score), options:{fontSize:10, bold:true, color:riskLevelHex(score), align:'center'}}
+        ]);
+      });
+      slide.addTable(riskRows, {
+        x:riskX, y:delY + 0.35, w:5.5,
+        colW:[3.5, 0.55, 0.55, 0.9],
+        rowH:0.32,
+        border:{type:'solid', pt:0.5, color:'E2E8F0'},
+        fontFace:'Segoe UI',
+        autoPage:false
+      });
+
+      // Mitigation details below risk table
+      const mitY = delY + 0.35 + (riskRows.length * 0.32) + 0.15;
+      let mitText = '';
+      risks.forEach((r, ri) => {
+        if (r.mitigation) {
+          mitText += (ri + 1) + '. ' + r.mitigation + '\n';
+        }
+      });
+      if (mitText) {
+        slide.addText('Mitigations:', {x:riskX, y:mitY, w:5.5, h:0.25, fontSize:8, fontFace:'Segoe UI', bold:true, color:DARK});
+        slide.addText(mitText.trim(), {x:riskX, y:mitY + 0.22, w:5.5, h:1.2, fontSize:8, fontFace:'Segoe UI', color:GRAY, valign:'top', wrap:true, lineSpacingMultiple:1.15});
+      }
+    } else {
+      slide.addText('No risks identified', {x:riskX, y:delY + 0.4, w:5.5, h:0.3, fontSize:9, fontFace:'Segoe UI', italic:true, color:GREEN_HEX});
+    }
+
+    // ---- ISSUES (if any, bottom left) ----
+    const issues = (p.issues || []).filter(iss => iss.status === 'open');
+    if (issues.length > 0) {
+      const issBaseY = delY + 0.35 + ((deliverables.length + 1) * 0.32) + 0.25;
+      slide.addText('OPEN ISSUES (' + issues.length + ')', {x:0.6, y:issBaseY, w:6.2, h:0.3, fontSize:9, fontFace:'Segoe UI', bold:true, color:RED_HEX});
+      issues.forEach((iss, ii) => {
+        const issY = issBaseY + 0.3 + ii * 0.28;
+        const prioColor = {high:RED_HEX, medium:AMBER_HEX, low:GREEN_HEX}[iss.priority] || MUTED;
+        slide.addText('● ' + (iss.description || '—') + (iss.owner ? '  [' + iss.owner + ']' : ''), {
+          x:0.6, y:issY, w:6.2, h:0.26, fontSize:8, fontFace:'Segoe UI', color:prioColor, valign:'top'
+        });
+      });
+    }
+
+    // ---- NOTES (bottom, if present) ----
+    if (p.notes) {
+      slide.addShape(pptx.ShapeType.roundRect, {x:0.6, y:6.5, w:12.1, h:0.5, rectRadius:0.06, fill:{color:'FEF9C3'}});
+      slide.addText('NOTE: ' + p.notes, {x:0.75, y:6.5, w:11.8, h:0.5, fontSize:8, fontFace:'Segoe UI', color:'92400E', valign:'middle', wrap:true});
+    }
+  });
+
+  // Generate and download
+  const fileName = div.name.replace(/\s+/g, '_') + '_Project_Summary_' + new Date().toISOString().slice(0,10) + '.pptx';
+  pptx.writeFile({fileName: fileName}).then(() => {
+    showToast('PowerPoint exported: ' + fileName);
+  }).catch(err => {
+    console.error('PPTX export failed', err);
+    showToast('Export failed — see console for details', 'error');
+  });
+}
+
+// ===================================================================
+// DETAIL / EDITOR PANEL
+// ===================================================================
+function openDetail(projectId) {
+  state.editingProjectId = projectId;
+  const p = state.projects.find(x => x.id === projectId);
+  if (!p) return;
+
+  const div = DIVISIONS.find(d => d.id === p.division);
+  document.getElementById('detailTitle').textContent = p.name || 'Untitled Project';
+  document.getElementById('archiveBtn').textContent = p.archived ? 'Unarchive' : 'Archive';
+
+  const body = document.getElementById('detailBody');
+  body.innerHTML = `
+    <div class="detail-section">
+      <h3>General Information</h3>
+      <div class="detail-grid">
+        <div class="detail-field">
+          <label>Project Name</label>
+          <input type="text" value="${esc(p.name)}" data-field="name" onchange="updateField(this)">
+        </div>
+        <div class="detail-field">
+          <label>Division</label>
+          <select data-field="division" onchange="updateField(this)">
+            ${DIVISIONS.map(d => `<option value="${d.id}" ${d.id === p.division ? 'selected' : ''}>${d.name}</option>`).join('')}
+          </select>
+        </div>
+        <div class="detail-field">
+          <label>Sponsor</label>
+          <input type="text" value="${esc(p.sponsor)}" data-field="sponsor" onchange="updateField(this)">
+        </div>
+        <div class="detail-field">
+          <label>Project Lead</label>
+          <input type="text" value="${esc(p.projectLead)}" data-field="projectLead" onchange="updateField(this)">
+        </div>
+        <div class="detail-field full">
+          <label>Description</label>
+          <textarea data-field="description" onchange="updateField(this)">${esc(p.description)}</textarea>
+        </div>
+      </div>
+    </div>
+
+    <div class="detail-section">
+      <h3>Timeline & Budget</h3>
+      <div class="detail-grid">
+        <div class="detail-field">
+          <label>Quarter</label>
+          <select data-field="quarter" onchange="updateField(this)">
+            ${getQuartersRange().map(q => `<option value="${q}" ${q === p.quarter ? 'selected' : ''}>${q}</option>`).join('')}
+          </select>
+        </div>
+        <div class="detail-field">
+          <label>Timeline Status</label>
+          <select data-field="timelineStatus" onchange="updateField(this)">
+            <option value="on-track" ${p.timelineStatus === 'on-track' ? 'selected' : ''}>On Track</option>
+            <option value="at-risk" ${p.timelineStatus === 'at-risk' ? 'selected' : ''}>At Risk</option>
+            <option value="delayed" ${p.timelineStatus === 'delayed' ? 'selected' : ''}>Delayed</option>
+            <option value="completed" ${p.timelineStatus === 'completed' ? 'selected' : ''}>Completed</option>
+            <option value="on-hold" ${p.timelineStatus === 'on-hold' ? 'selected' : ''}>On Hold</option>
+          </select>
+        </div>
+        <div class="detail-field">
+          <label>Start Date</label>
+          <input type="date" value="${p.startDate || ''}" data-field="startDate" onchange="updateField(this)">
+        </div>
+        <div class="detail-field">
+          <label>End Date</label>
+          <input type="date" value="${p.endDate || ''}" data-field="endDate" onchange="updateField(this)">
+        </div>
+        <div class="detail-field">
+          <label>Total Budget ($)</label>
+          <input type="number" value="${p.budgetTotal || 0}" data-field="budgetTotal" onchange="updateField(this)" min="0">
+        </div>
+        <div class="detail-field">
+          <label>Spent ($)</label>
+          <input type="number" value="${p.budgetSpent || 0}" data-field="budgetSpent" onchange="updateField(this)" min="0">
+        </div>
+        <div class="detail-field">
+          <label>Budget Status</label>
+          <select data-field="budgetStatus" onchange="updateField(this)">
+            <option value="on-track" ${p.budgetStatus === 'on-track' ? 'selected' : ''}>On Track</option>
+            <option value="at-risk" ${p.budgetStatus === 'at-risk' ? 'selected' : ''}>At Risk</option>
+            <option value="over-budget" ${p.budgetStatus === 'over-budget' ? 'selected' : ''}>Over Budget</option>
+          </select>
+        </div>
+        <div class="detail-field">
+          <label>% Complete</label>
+          <input type="number" value="${p.percentComplete || 0}" data-field="percentComplete" onchange="updateField(this)" min="0" max="100">
+        </div>
+      </div>
+    </div>
+
+    <div class="detail-section">
+      <h3>Deliverables</h3>
+      <div id="deliverablesList">
+        ${(p.deliverables || []).map((d, i) => deliverableRow(d, i)).join('')}
+      </div>
+      <button class="add-row-btn" onclick="addDeliverable()">+ Add Deliverable</button>
+    </div>
+
+    <div class="detail-section">
+      <h3>Risks</h3>
+      <div id="risksList">
+        ${(p.risks || []).map((r, i) => riskRow(r, i)).join('')}
+      </div>
+      <button class="add-row-btn" onclick="addRisk()">+ Add Risk</button>
+    </div>
+
+    <div class="detail-section">
+      <h3>Issues</h3>
+      <div id="issuesList">
+        ${(p.issues || []).map((iss, i) => issueRow(iss, i)).join('')}
+      </div>
+      <button class="add-row-btn" onclick="addIssue()">+ Add Issue</button>
+    </div>
+
+    <div class="detail-section">
+      <h3>Notes</h3>
+      <textarea style="width:100%" rows="3" data-field="notes" onchange="updateField(this)">${esc(p.notes || '')}</textarea>
+    </div>
+  `;
+
+  document.getElementById('detailOverlay').classList.add('open');
+  document.getElementById('detailPanel').classList.add('open');
+}
+
+function closeDetail() {
+  document.getElementById('detailOverlay').classList.remove('open');
+  document.getElementById('detailPanel').classList.remove('open');
+  state.editingProjectId = null;
+  renderAll();
+}
+
+function deliverableRow(d, idx) {
+  return `
+    <div class="editor-row" data-del-idx="${idx}">
+      <div class="grow">
+        <input type="text" value="${esc(d.name)}" placeholder="Deliverable name" style="width:100%;margin-bottom:4px" data-delidx="${idx}" data-delfield="name" onchange="updateDeliverable(this)">
+        <div style="display:flex;gap:4px">
+          <input type="date" value="${d.dueDate || ''}" style="flex:1" data-delidx="${idx}" data-delfield="dueDate" onchange="updateDeliverable(this)">
+          <select style="flex:1" data-delidx="${idx}" data-delfield="status" onchange="updateDeliverable(this)">
+            <option value="pending" ${d.status === 'pending' ? 'selected' : ''}>Pending</option>
+            <option value="in-progress" ${d.status === 'in-progress' ? 'selected' : ''}>In Progress</option>
+            <option value="complete" ${d.status === 'complete' ? 'selected' : ''}>Complete</option>
+            <option value="overdue" ${d.status === 'overdue' ? 'selected' : ''}>Overdue</option>
+          </select>
+        </div>
+      </div>
+      <button class="remove-btn" onclick="removeDeliverable(${idx})">×</button>
+    </div>
+  `;
+}
+
+function riskRow(r, idx) {
+  const score = (r.severity || 1) * (r.probability || 1);
+  return `
+    <div class="editor-row" data-risk-idx="${idx}">
+      <div class="grow">
+        <input type="text" value="${esc(r.description)}" placeholder="Risk description" style="width:100%;margin-bottom:4px" data-riskidx="${idx}" data-riskfield="description" onchange="updateRisk(this)">
+        <div style="display:flex;gap:4px;margin-bottom:4px">
+          <div style="flex:1">
+            <label style="font-size:10px;color:var(--text-muted)">Severity</label>
+            <select style="width:100%" data-riskidx="${idx}" data-riskfield="severity" onchange="updateRisk(this)">
+              <option value="1" ${r.severity == 1 ? 'selected' : ''}>1 — Low</option>
+              <option value="2" ${r.severity == 2 ? 'selected' : ''}>2 — Medium</option>
+              <option value="3" ${r.severity == 3 ? 'selected' : ''}>3 — High</option>
+            </select>
+          </div>
+          <div style="flex:1">
+            <label style="font-size:10px;color:var(--text-muted)">Probability</label>
+            <select style="width:100%" data-riskidx="${idx}" data-riskfield="probability" onchange="updateRisk(this)">
+              <option value="1" ${r.probability == 1 ? 'selected' : ''}>1 — Low</option>
+              <option value="2" ${r.probability == 2 ? 'selected' : ''}>2 — Medium</option>
+              <option value="3" ${r.probability == 3 ? 'selected' : ''}>3 — High</option>
+            </select>
+          </div>
+          <div style="display:flex;flex-direction:column;align-items:center;min-width:50px">
+            <label style="font-size:10px;color:var(--text-muted)">Score</label>
+            <span class="risk-score risk-${riskLevel(score)}" style="margin-top:2px">${score}</span>
+          </div>
+        </div>
+        <input type="text" value="${esc(r.mitigation || '')}" placeholder="Mitigation strategy" style="width:100%" data-riskidx="${idx}" data-riskfield="mitigation" onchange="updateRisk(this)">
+      </div>
+      <button class="remove-btn" onclick="removeRisk(${idx})">×</button>
+    </div>
+  `;
+}
+
+function issueRow(iss, idx) {
+  return `
+    <div class="editor-row" data-issue-idx="${idx}">
+      <div class="grow">
+        <input type="text" value="${esc(iss.description)}" placeholder="Issue description" style="width:100%;margin-bottom:4px" data-issueidx="${idx}" data-issuefield="description" onchange="updateIssue(this)">
+        <div style="display:flex;gap:4px">
+          <select style="flex:1" data-issueidx="${idx}" data-issuefield="priority" onchange="updateIssue(this)">
+            <option value="high" ${iss.priority === 'high' ? 'selected' : ''}>High</option>
+            <option value="medium" ${iss.priority === 'medium' ? 'selected' : ''}>Medium</option>
+            <option value="low" ${iss.priority === 'low' ? 'selected' : ''}>Low</option>
+          </select>
+          <input type="text" value="${esc(iss.owner || '')}" placeholder="Owner" style="flex:1" data-issueidx="${idx}" data-issuefield="owner" onchange="updateIssue(this)">
+          <select style="flex:1" data-issueidx="${idx}" data-issuefield="status" onchange="updateIssue(this)">
+            <option value="open" ${iss.status === 'open' ? 'selected' : ''}>Open</option>
+            <option value="resolved" ${iss.status === 'resolved' ? 'selected' : ''}>Resolved</option>
+          </select>
+        </div>
+      </div>
+      <button class="remove-btn" onclick="removeIssue(${idx})">×</button>
+    </div>
+  `;
+}
+
+// ===================================================================
+// FIELD UPDATE HANDLERS (with autosave)
+// ===================================================================
+function getEditingProject() {
+  return state.projects.find(p => p.id === state.editingProjectId);
+}
+
+function scheduleAutosave() {
+  clearTimeout(autosaveTimer);
+  autosaveTimer = setTimeout(() => {
+    saveData();
+    showToast('Changes saved automatically', 'success');
+  }, 800);
+}
+
+function updateField(el) {
+  const p = getEditingProject();
+  if (!p) return;
+  const field = el.dataset.field;
+  let val = el.value;
+  if (el.type === 'number') val = parseFloat(val) || 0;
+  p[field] = val;
+  if (field === 'name') document.getElementById('detailTitle').textContent = val;
+  scheduleAutosave();
+}
+
+function updateDeliverable(el) {
+  const p = getEditingProject();
+  if (!p) return;
+  const idx = parseInt(el.dataset.delidx);
+  const field = el.dataset.delfield;
+  p.deliverables[idx][field] = el.value;
+  scheduleAutosave();
+}
+
+function addDeliverable() {
+  const p = getEditingProject();
+  if (!p) return;
+  if (!p.deliverables) p.deliverables = [];
+  p.deliverables.push({name:'', dueDate:'', status:'pending'});
+  scheduleAutosave();
+  openDetail(p.id); // re-render
+}
+
+function removeDeliverable(idx) {
+  const p = getEditingProject();
+  if (!p) return;
+  p.deliverables.splice(idx, 1);
+  scheduleAutosave();
+  openDetail(p.id);
+}
+
+function updateRisk(el) {
+  const p = getEditingProject();
+  if (!p) return;
+  const idx = parseInt(el.dataset.riskidx);
+  const field = el.dataset.riskfield;
+  let val = el.value;
+  if (field === 'severity' || field === 'probability') val = parseInt(val);
+  p.risks[idx][field] = val;
+  scheduleAutosave();
+  // Re-render risk score display
+  const score = p.risks[idx].severity * p.risks[idx].probability;
+  const row = el.closest('.editor-row');
+  const scoreEl = row.querySelector('.risk-score');
+  if (scoreEl) {
+    scoreEl.textContent = score;
+    scoreEl.className = `risk-score risk-${riskLevel(score)}`;
+  }
+}
+
+function addRisk() {
+  const p = getEditingProject();
+  if (!p) return;
+  if (!p.risks) p.risks = [];
+  p.risks.push({description:'', severity:1, probability:1, mitigation:''});
+  scheduleAutosave();
+  openDetail(p.id);
+}
+
+function removeRisk(idx) {
+  const p = getEditingProject();
+  if (!p) return;
+  p.risks.splice(idx, 1);
+  scheduleAutosave();
+  openDetail(p.id);
+}
+
+function updateIssue(el) {
+  const p = getEditingProject();
+  if (!p) return;
+  const idx = parseInt(el.dataset.issueidx);
+  const field = el.dataset.issuefield;
+  p.issues[idx][field] = el.value;
+  scheduleAutosave();
+}
+
+function addIssue() {
+  const p = getEditingProject();
+  if (!p) return;
+  if (!p.issues) p.issues = [];
+  p.issues.push({description:'', priority:'medium', owner:'', status:'open'});
+  scheduleAutosave();
+  openDetail(p.id);
+}
+
+function removeIssue(idx) {
+  const p = getEditingProject();
+  if (!p) return;
+  p.issues.splice(idx, 1);
+  scheduleAutosave();
+  openDetail(p.id);
+}
+
+// ===================================================================
+// ARCHIVE / DELETE
+// ===================================================================
+function toggleArchiveProject() {
+  const p = getEditingProject();
+  if (!p) return;
+  p.archived = !p.archived;
+  saveData();
+  showToast(p.archived ? 'Project archived' : 'Project unarchived');
+  closeDetail();
+}
+
+function deleteProject() {
+  const p = getEditingProject();
+  if (!p) return;
+  openConfirm('Delete Project', `Permanently delete "${p.name}"? This cannot be undone.`, () => {
+    state.projects = state.projects.filter(x => x.id !== p.id);
+    saveData();
+    showToast('Project deleted');
+    closeDetail();
+  });
+}
+
+// ===================================================================
+// NEW PROJECT
+// ===================================================================
+function openNewProject() {
+  const division = state.currentView !== 'enterprise' ? state.currentView : DIVISIONS[0].id;
+  const newProject = {
+    id: generateId(),
+    division: division,
+    name: 'New Project',
+    description: '',
+    sponsor: '',
+    projectLead: '',
+    quarter: getCurrentQuarter(),
+    startDate: new Date().toISOString().slice(0, 10),
+    endDate: '',
+    timelineStatus: 'on-track',
+    budgetTotal: 0,
+    budgetSpent: 0,
+    budgetStatus: 'on-track',
+    percentComplete: 0,
+    deliverables: [],
+    risks: [],
+    issues: [],
+    notes: '',
+    archived: false
+  };
+  state.projects.push(newProject);
+  saveData();
+  renderAll();
+  openDetail(newProject.id);
+  showToast('New project created');
+}
+
+// ===================================================================
+// CONFIRM MODAL
+// ===================================================================
+let confirmCallback = null;
+function openConfirm(title, msg, onOk) {
+  document.getElementById('confirmTitle').textContent = title;
+  document.getElementById('confirmMessage').textContent = msg;
+  confirmCallback = onOk;
+  document.getElementById('confirmOk').onclick = () => { closeConfirm(); if (confirmCallback) confirmCallback(); };
+  document.getElementById('confirmModal').classList.add('open');
+}
+function closeConfirm() {
+  document.getElementById('confirmModal').classList.remove('open');
+}
+
+// ===================================================================
+// DRILL-DOWN
+// ===================================================================
+function openDrilldown(type) {
+  const activeProjects = state.projects.filter(p => !p.archived);
+  const titleEl = document.getElementById('drilldownTitle');
+  const bodyEl = document.getElementById('drilldownBody');
+  let html = '';
+
+  function divName(divId) { return (DIVISIONS.find(d => d.id === divId) || {}).name || divId; }
+  function divColor(divId) { return (DIVISIONS.find(d => d.id === divId) || {}).color || 'var(--text-muted)'; }
+
+  function projectRow(p, extraCols) {
+    return `<tr onclick="closeDrilldown();openDetail('${p.id}')">
+      <td><span style="display:inline-block;width:8px;height:8px;border-radius:50%;background:${divColor(p.division)};margin-right:6px"></span>${esc(divName(p.division))}</td>
+      <td><strong>${esc(p.name)}</strong></td>
+      <td>${esc(p.projectLead)}</td>
+      ${extraCols}
+    </tr>`;
+  }
+
+  if (type === 'active') {
+    titleEl.innerHTML = `<span class="kpi-chip" style="background:var(--br-blue-light);color:var(--br-blue)">${activeProjects.length}</span> Active Projects`;
+    html = `<table class="drilldown-table"><thead><tr><th>Division</th><th>Project</th><th>Lead</th><th>Quarter</th><th>Timeline</th><th>% Complete</th></tr></thead><tbody>`;
+    activeProjects.forEach(p => {
+      html += projectRow(p, `
+        <td>${p.quarter}</td>
+        <td>${timelineBadge(p.timelineStatus)}</td>
+        <td><div class="progress-wrap"><div class="progress" style="min-width:60px"><div class="progress-fill" style="width:${p.percentComplete}%;background:${progressColor(p.percentComplete,p.timelineStatus)}"></div></div><span class="progress-pct">${p.percentComplete}%</span></div></td>
+      `);
+    });
+    html += '</tbody></table>';
+
+  } else if (type === 'ontrack') {
+    const projects = activeProjects.filter(p => p.timelineStatus === 'on-track');
+    titleEl.innerHTML = `<span class="kpi-chip" style="background:var(--status-green-bg);color:#15803D">${projects.length}</span> On Track Projects`;
+    html = `<table class="drilldown-table"><thead><tr><th>Division</th><th>Project</th><th>Lead</th><th>Quarter</th><th>% Complete</th><th>Budget</th></tr></thead><tbody>`;
+    projects.forEach(p => {
+      const budgetPct = p.budgetTotal ? Math.round(p.budgetSpent / p.budgetTotal * 100) : 0;
+      html += projectRow(p, `
+        <td>${p.quarter}</td>
+        <td><div class="progress-wrap"><div class="progress" style="min-width:60px"><div class="progress-fill" style="width:${p.percentComplete}%;background:var(--status-green)"></div></div><span class="progress-pct">${p.percentComplete}%</span></div></td>
+        <td><span style="font-size:12px">$${formatK(p.budgetSpent)} / $${formatK(p.budgetTotal)} (${budgetPct}%)</span></td>
+      `);
+    });
+    html += '</tbody></table>';
+
+  } else if (type === 'atrisk') {
+    const projects = activeProjects.filter(p => p.timelineStatus === 'at-risk' || p.timelineStatus === 'delayed');
+    titleEl.innerHTML = `<span class="kpi-chip" style="background:var(--status-red-bg);color:#DC2626">${projects.length}</span> At Risk / Delayed Projects`;
+    html = `<table class="drilldown-table"><thead><tr><th>Division</th><th>Project</th><th>Lead</th><th>Status</th><th>Top Risk</th><th>Open Issues</th></tr></thead><tbody>`;
+    projects.forEach(p => {
+      const topRisk = getTopRisk(p);
+      const openIssues = (p.issues || []).filter(i => i.status === 'open').length;
+      const topRiskDesc = (p.risks || []).sort((a,b) => (b.severity*b.probability) - (a.severity*a.probability))[0];
+      html += projectRow(p, `
+        <td>${timelineBadge(p.timelineStatus)}</td>
+        <td>${topRiskDesc ? `<span style="font-size:12px">${esc(topRiskDesc.description.substring(0,60))}${topRiskDesc.description.length > 60 ? '...' : ''}</span>` : '<span style="color:var(--text-muted)">—</span>'}</td>
+        <td style="text-align:center"><span style="font-weight:700;color:${openIssues > 0 ? 'var(--status-red)' : 'var(--status-green)'}">${openIssues}</span></td>
+      `);
+    });
+    html += '</tbody></table>';
+    // Show key risks detail below
+    if (projects.some(p => (p.risks||[]).length > 0)) {
+      html += '<h3 style="font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:1px;color:var(--text-muted);margin:20px 0 10px">Key Risks & Mitigations</h3>';
+      projects.forEach(p => {
+        (p.risks || []).sort((a,b) => (b.severity*b.probability) - (a.severity*a.probability)).forEach(r => {
+          const score = r.severity * r.probability;
+          html += `<div class="drilldown-risk-row">
+            <span class="risk-score risk-${riskLevel(score)}" style="flex-shrink:0">${score}</span>
+            <span class="risk-project">${esc(p.name)}</span>
+            <div style="flex:1"><div class="risk-desc">${esc(r.description)}</div>
+            ${r.mitigation ? `<div class="risk-mitigation" style="font-size:11px;color:var(--text-muted);margin-top:2px"><strong>Mitigation:</strong> ${esc(r.mitigation)}</div>` : ''}</div>
+          </div>`;
+        });
+      });
+    }
+
+  } else if (type === 'budget') {
+    titleEl.innerHTML = `<span class="kpi-chip" style="background:var(--br-blue-light);color:var(--br-blue)">$</span> Budget Utilization by Project`;
+    const sorted = [...activeProjects].sort((a,b) => (b.budgetTotal||0) - (a.budgetTotal||0));
+    html = `<table class="drilldown-table"><thead><tr><th>Division</th><th>Project</th><th>Total Budget</th><th>Spent</th><th>Remaining</th><th>Utilization</th><th>Status</th></tr></thead><tbody>`;
+    let grandTotal = 0, grandSpent = 0;
+    sorted.forEach(p => {
+      const pct = p.budgetTotal ? Math.round(p.budgetSpent / p.budgetTotal * 100) : 0;
+      const remaining = (p.budgetTotal || 0) - (p.budgetSpent || 0);
+      grandTotal += p.budgetTotal || 0;
+      grandSpent += p.budgetSpent || 0;
+      html += projectRow(p, `
+        <td style="font-weight:600">$${formatK(p.budgetTotal)}</td>
+        <td>$${formatK(p.budgetSpent)}</td>
+        <td style="color:${remaining < 0 ? 'var(--status-red)' : 'var(--text-secondary)'}">$${formatK(remaining)}</td>
+        <td><div class="progress-wrap"><div class="progress" style="min-width:60px"><div class="progress-fill" style="width:${Math.min(pct,100)}%;background:${budgetColor(p.budgetStatus)}"></div></div><span class="progress-pct">${pct}%</span></div></td>
+        <td>${budgetBadge(p.budgetStatus)}</td>
+      `);
+    });
+    html += `</tbody><tfoot><tr style="background:var(--bg-main);font-weight:700">
+      <td colspan="2" style="padding:10px 12px;border-top:2px solid var(--border)">TOTAL</td>
+      <td style="padding:10px 12px;border-top:2px solid var(--border)">$${formatK(grandTotal)}</td>
+      <td style="padding:10px 12px;border-top:2px solid var(--border)">$${formatK(grandSpent)}</td>
+      <td style="padding:10px 12px;border-top:2px solid var(--border)">$${formatK(grandTotal - grandSpent)}</td>
+      <td style="padding:10px 12px;border-top:2px solid var(--border)">${grandTotal ? Math.round(grandSpent/grandTotal*100) : 0}%</td>
+      <td style="padding:10px 12px;border-top:2px solid var(--border)"></td>
+    </tr></tfoot></table>`;
+
+  } else if (type === 'completion') {
+    titleEl.innerHTML = `<span class="kpi-chip" style="background:var(--br-green-light);color:var(--br-green-dark)">%</span> Completion by Project`;
+    const sorted = [...activeProjects].sort((a,b) => (b.percentComplete||0) - (a.percentComplete||0));
+    html = `<table class="drilldown-table"><thead><tr><th>Division</th><th>Project</th><th>Lead</th><th>Timeline</th><th style="min-width:200px">Progress</th><th>Deliverables</th></tr></thead><tbody>`;
+    sorted.forEach(p => {
+      const delDone = (p.deliverables||[]).filter(d => d.status === 'complete').length;
+      const delTotal = (p.deliverables||[]).length;
+      html += projectRow(p, `
+        <td>${timelineBadge(p.timelineStatus)}</td>
+        <td><div class="progress-wrap"><div class="progress" style="min-width:120px"><div class="progress-fill" style="width:${p.percentComplete}%;background:${progressColor(p.percentComplete,p.timelineStatus)}"></div></div><span class="progress-pct" style="min-width:40px">${p.percentComplete}%</span></div></td>
+        <td>${delDone}/${delTotal} done</td>
+      `);
+    });
+    html += '</tbody></table>';
+
+  } else if (type === 'highrisk') {
+    // Collect all high-risk items
+    const highRiskItems = [];
+    activeProjects.forEach(p => {
+      (p.risks || []).forEach(r => {
+        const score = r.severity * r.probability;
+        if (score >= 7) highRiskItems.push({project: p, risk: r, score});
+      });
+    });
+    highRiskItems.sort((a,b) => b.score - a.score);
+    titleEl.innerHTML = `<span class="kpi-chip" style="background:var(--status-red-bg);color:var(--status-red)">${highRiskItems.length}</span> High Risks (Score ≥ 7)`;
+
+    if (highRiskItems.length === 0) {
+      html = '<div class="empty-state" style="padding:40px"><svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="var(--status-green)" stroke-width="1.5"><path d="M22 11.08V12a10 10 0 11-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg><h3>No High Risks</h3><p>All risk scores are below 7. Looking good!</p></div>';
+    } else {
+      html = `<table class="drilldown-table"><thead><tr><th>Score</th><th>Division</th><th>Project</th><th>Severity</th><th>Probability</th><th>Risk Description</th><th>Mitigation</th></tr></thead><tbody>`;
+      highRiskItems.forEach(({project: p, risk: r, score}) => {
+        const sevLabels = {1:'Low',2:'Medium',3:'High'};
+        html += `<tr onclick="closeDrilldown();openDetail('${p.id}')" style="cursor:pointer">
+          <td><span class="risk-score risk-high">${score}</span></td>
+          <td><span style="display:inline-block;width:8px;height:8px;border-radius:50%;background:${divColor(p.division)};margin-right:6px"></span>${esc(divName(p.division))}</td>
+          <td><strong>${esc(p.name)}</strong></td>
+          <td><span class="badge badge-${r.severity >= 3 ? 'red' : r.severity >= 2 ? 'amber' : 'green'}"><span class="badge-dot"></span>${sevLabels[r.severity]}</span></td>
+          <td><span class="badge badge-${r.probability >= 3 ? 'red' : r.probability >= 2 ? 'amber' : 'green'}"><span class="badge-dot"></span>${sevLabels[r.probability]}</span></td>
+          <td style="max-width:200px">${esc(r.description)}</td>
+          <td style="font-size:12px;color:var(--text-secondary);max-width:200px">${esc(r.mitigation || '—')}</td>
+        </tr>`;
+      });
+      html += '</tbody></table>';
+    }
+  }
+
+  bodyEl.innerHTML = html;
+  document.getElementById('drilldownOverlay').classList.add('open');
+}
+
+function closeDrilldown() {
+  document.getElementById('drilldownOverlay').classList.remove('open');
+}
+
+// ===================================================================
+// TOAST
+// ===================================================================
+function showToast(message, type = 'success') {
+  const container = document.getElementById('toastContainer');
+  const toast = document.createElement('div');
+  toast.className = 'toast';
+  const iconColor = type === 'error' ? '#EF4444' : '#22C55E';
+  const icon = type === 'error'
+    ? `<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="${iconColor}" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="15" y1="9" x2="9" y2="15"/><line x1="9" y1="9" x2="15" y2="15"/></svg>`
+    : `<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="${iconColor}" stroke-width="2"><path d="M22 11.08V12a10 10 0 11-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>`;
+  toast.innerHTML = icon + message;
+  container.appendChild(toast);
+  setTimeout(() => toast.remove(), 3000);
+}
+
+// ===================================================================
+// HELPERS
+// ===================================================================
+function esc(s) { if (!s) return ''; return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
+
+function formatK(n) {
+  if (!n) return '0';
+  if (n >= 1000000) return (n / 1000000).toFixed(1) + 'M';
+  if (n >= 1000) return (n / 1000).toFixed(0) + 'K';
+  return n.toLocaleString();
+}
+
+function formatM(n) {
+  if (!n) return '0';
+  if (n >= 1000000) return (n / 1000000).toFixed(2) + 'M';
+  if (n >= 1000) return (n / 1000).toFixed(0) + 'K';
+  return n.toLocaleString();
+}
+
+function statusColor(status) {
+  const map = {'on-track':'var(--status-green)','at-risk':'var(--status-amber)','delayed':'var(--status-red)','completed':'var(--status-blue)','on-hold':'var(--text-muted)'};
+  return map[status] || 'var(--text-muted)';
+}
+
+function budgetColor(status) {
+  const map = {'on-track':'var(--status-green)','at-risk':'var(--status-amber)','over-budget':'var(--status-red)'};
+  return map[status] || 'var(--text-muted)';
+}
+
+function progressColor(pct, status) {
+  if (status === 'completed') return 'var(--status-blue)';
+  if (status === 'delayed') return 'var(--status-red)';
+  if (status === 'at-risk') return 'var(--status-amber)';
+  return 'var(--br-blue)';
+}
+
+function timelineBadge(status) {
+  const map = {
+    'on-track': 'badge-green', 'at-risk': 'badge-amber', 'delayed': 'badge-red',
+    'completed': 'badge-blue', 'on-hold': 'badge-gray'
+  };
+  const labels = {
+    'on-track':'On Track','at-risk':'At Risk','delayed':'Delayed','completed':'Completed','on-hold':'On Hold'
+  };
+  const cls = map[status] || 'badge-gray';
+  return `<span class="badge ${cls}"><span class="badge-dot"></span>${labels[status] || status}</span>`;
+}
+
+function budgetBadge(status) {
+  const map = {'on-track':'badge-green','at-risk':'badge-amber','over-budget':'badge-red'};
+  const labels = {'on-track':'Budget OK','at-risk':'Budget Risk','over-budget':'Over Budget'};
+  const cls = map[status] || 'badge-gray';
+  return `<span class="badge ${cls}"><span class="badge-dot"></span>${labels[status] || status}</span>`;
+}
+
+function riskLevel(score) {
+  if (score >= 7) return 'high';
+  if (score >= 4) return 'med';
+  return 'low';
+}
+
+function getTopRisk(project) {
+  const risks = project.risks || [];
+  if (risks.length === 0) return null;
+  return Math.max(...risks.map(r => (r.severity || 1) * (r.probability || 1)));
+}
+
+// ===================================================================
+// INIT
+// ===================================================================
+(function init() {
+  if (!loadData() || state.projects.length === 0) {
+    loadSampleData();
+  }
+  // Default: show all active projects (Current mode)
+  state.showCurrentActive = true;
+  state.selectedQuarters = [];
+  renderAll();
+  updateQuarterButtons();
+})();
+</script>
+</body>
+</html>

@@ -1,0 +1,7 @@
+Place the BlueRidge Life Sciences logo file in this directory as "logo.png".
+
+The dashboard will automatically detect and use it for:
+- Sidebar branding
+- PowerPoint export header
+
+If no logo is found, the company name text will be displayed instead.

@@ -1,0 +1,1869 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>BlueRidge Life Sciences Dashboard</title>
+<script src="https://cdn.plot.ly/plotly-2.27.0.min.js"></script>
+<script src="https://cdn.jsdelivr.net/gh/gitbrent/PptxGenJS/dist/pptxgen.bundle.js"></script>
+<script src="https://cdn.sheetjs.com/xlsx-0.20.1/package/dist/xlsx.full.min.js"></script>
+<style>
+:root {
+  --primary-blue: #0066B3;
+  --dark-blue: #003D6B;
+  --medium-blue: #2E86C1;
+  --light-blue: #AED6F1;
+  --pale-blue: #D6EAF8;
+  --primary-green: #7AB648;
+  --dark-green: #4A7A2E;
+  --medium-green: #5DAE3B;
+  --light-green: #ABEBC6;
+  --pale-green: #D5F5E3;
+  --white: #FFFFFF;
+  --light-gray: #F8F9FA;
+  --medium-gray: #BDC3C7;
+  --dark-gray: #2C3E50;
+  --text-primary: #1A1A2E;
+  --text-secondary: #566573;
+  --positive: #27AE60;
+  --negative: #E74C3C;
+  --neutral: #7F8C8D;
+}
+
+* { margin: 0; padding: 0; box-sizing: border-box; }
+
+body {
+  font-family: "Times New Roman", Times, serif;
+  background: var(--light-gray);
+  color: var(--text-primary);
+  display: flex;
+  min-height: 100vh;
+}
+
+/* Sidebar */
+.sidebar {
+  width: 260px;
+  min-width: 260px;
+  background: var(--dark-blue);
+  color: var(--white);
+  display: flex;
+  flex-direction: column;
+  padding: 0;
+  overflow-y: auto;
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+  position: fixed;
+  top: 0;
+  left: 0;
+  bottom: 0;
+  z-index: 100;
+}
+.sidebar::-webkit-scrollbar { display: none; }
+
+.sidebar-logo {
+  padding: 24px 20px 12px;
+  text-align: center;
+  border-bottom: 1px solid rgba(255,255,255,0.15);
+}
+.sidebar-logo h2 {
+  font-size: 18px;
+  font-weight: 700;
+  color: var(--white);
+  letter-spacing: 0.5px;
+}
+.sidebar-logo .subtitle {
+  font-size: 12px;
+  color: var(--light-blue);
+  margin-top: 4px;
+}
+
+.sidebar-section {
+  padding: 16px 16px 8px;
+}
+.sidebar-section-label {
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 1.2px;
+  color: var(--light-blue);
+  margin-bottom: 8px;
+  font-weight: 600;
+}
+
+.nav-btn {
+  display: block;
+  width: 100%;
+  padding: 10px 16px;
+  background: transparent;
+  border: none;
+  color: var(--white);
+  font-family: inherit;
+  font-size: 14px;
+  text-align: left;
+  cursor: pointer;
+  border-radius: 6px;
+  margin-bottom: 2px;
+  transition: background 0.2s;
+}
+.nav-btn:hover { background: rgba(255,255,255,0.1); }
+.nav-btn.active { background: var(--primary-blue); font-weight: 600; }
+
+.sidebar-select-group { margin-bottom: 12px; }
+.sidebar-select-group label {
+  display: block;
+  font-size: 12px;
+  color: var(--light-blue);
+  margin-bottom: 4px;
+}
+.sidebar-select-group select {
+  width: 100%;
+  padding: 8px 10px;
+  border-radius: 6px;
+  border: 1px solid rgba(255,255,255,0.2);
+  background: rgba(255,255,255,0.08);
+  color: var(--white);
+  font-family: inherit;
+  font-size: 13px;
+  outline: none;
+}
+.sidebar-select-group select option { background: var(--dark-blue); color: #fff; }
+.sidebar-select-group input[type="date"] {
+  color-scheme: dark;
+}
+.sidebar-select-group input[type="date"]::-webkit-calendar-picker-indicator {
+  filter: invert(1);
+}
+
+.sidebar-export-btn {
+  display: block;
+  width: 100%;
+  padding: 10px;
+  background: var(--primary-green);
+  color: var(--white);
+  border: none;
+  border-radius: 6px;
+  font-family: inherit;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  margin-top: 8px;
+  transition: background 0.2s;
+}
+.sidebar-export-btn:hover { background: var(--dark-green); }
+
+/* Main Area */
+.main-area {
+  margin-left: 260px;
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+}
+
+.header-bar {
+  background: linear-gradient(135deg, var(--dark-blue), var(--primary-blue));
+  padding: 18px 32px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+.header-bar h1 {
+  color: var(--white);
+  font-size: 22px;
+  font-weight: 700;
+}
+.header-bar .header-sub {
+  color: var(--light-blue);
+  font-size: 13px;
+}
+.green-divider {
+  height: 3px;
+  background: var(--primary-green);
+}
+
+.content {
+  flex: 1;
+  padding: 24px 28px;
+}
+
+/* Section Headers */
+.section-header {
+  color: var(--dark-blue);
+  font-size: 18px;
+  font-weight: 700;
+  margin: 20px 0 12px;
+  padding-bottom: 6px;
+  border-bottom: 3px solid var(--primary-green);
+  display: inline-block;
+}
+
+/* KPI Cards */
+.kpi-row {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 16px;
+  margin-bottom: 20px;
+}
+.kpi-card {
+  background: linear-gradient(135deg, var(--pale-blue), var(--white));
+  border: 1px solid var(--light-blue);
+  border-radius: 10px;
+  padding: 16px 18px;
+  transition: transform 0.15s, box-shadow 0.15s;
+  cursor: default;
+}
+.kpi-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 16px rgba(0,102,179,0.13);
+}
+.kpi-label {
+  font-size: 12px;
+  color: var(--text-secondary);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  margin-bottom: 6px;
+}
+.kpi-value {
+  font-size: 26px;
+  font-weight: 700;
+  color: var(--dark-blue);
+  margin-bottom: 4px;
+}
+.kpi-delta {
+  font-size: 13px;
+  font-weight: 600;
+}
+.kpi-delta.positive { color: var(--positive); }
+.kpi-delta.negative { color: var(--negative); }
+.kpi-delta.neutral { color: var(--neutral); }
+.kpi-source {
+  font-size: 10px;
+  color: var(--medium-gray);
+  margin-top: 4px;
+}
+
+/* Charts */
+.chart-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 20px;
+  margin-bottom: 20px;
+}
+.chart-box {
+  background: var(--white);
+  border-radius: 10px;
+  padding: 16px;
+  box-shadow: 0 1px 4px rgba(0,0,0,0.06);
+}
+.chart-full {
+  background: var(--white);
+  border-radius: 10px;
+  padding: 16px;
+  box-shadow: 0 1px 4px rgba(0,0,0,0.06);
+  margin-bottom: 20px;
+}
+
+/* Tabs */
+.tab-bar {
+  display: flex;
+  gap: 0;
+  margin-bottom: 16px;
+  border-bottom: 2px solid var(--light-blue);
+}
+.tab-btn {
+  padding: 8px 18px;
+  background: transparent;
+  border: none;
+  border-bottom: 3px solid transparent;
+  font-family: inherit;
+  font-size: 13px;
+  cursor: pointer;
+  color: var(--text-secondary);
+  transition: all 0.2s;
+  margin-bottom: -2px;
+}
+.tab-btn:hover { color: var(--primary-blue); }
+.tab-btn.active {
+  color: var(--primary-blue);
+  border-bottom-color: var(--primary-blue);
+  font-weight: 600;
+}
+
+/* Data Table */
+.data-table-wrap {
+  overflow-x: auto;
+  margin-bottom: 20px;
+}
+table.data-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 13px;
+}
+table.data-table th {
+  background: var(--dark-blue);
+  color: var(--white);
+  padding: 10px 12px;
+  text-align: left;
+  font-weight: 600;
+  white-space: nowrap;
+}
+table.data-table td {
+  padding: 8px 12px;
+  border-bottom: 1px solid #eee;
+  white-space: nowrap;
+}
+table.data-table tr:nth-child(even) { background: var(--pale-blue); }
+table.data-table tr:hover { background: var(--light-blue); }
+
+/* Ranking List */
+.ranking-list { list-style: none; }
+.ranking-list li {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 8px 12px;
+  border-bottom: 1px solid #eee;
+  font-size: 14px;
+}
+.ranking-list li:nth-child(odd) { background: var(--pale-blue); }
+.ranking-rank {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  background: var(--primary-blue);
+  color: #fff;
+  font-size: 12px;
+  font-weight: 700;
+  margin-right: 10px;
+}
+.ranking-name { flex: 1; }
+.ranking-value { font-weight: 700; color: var(--dark-blue); }
+
+/* Form styles for Integration Setup */
+.form-group {
+  margin-bottom: 14px;
+}
+.form-group label {
+  display: block;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--dark-blue);
+  margin-bottom: 4px;
+}
+.form-group input, .form-group select {
+  width: 100%;
+  max-width: 400px;
+  padding: 8px 12px;
+  border: 1px solid var(--medium-gray);
+  border-radius: 6px;
+  font-family: inherit;
+  font-size: 13px;
+}
+.form-actions { margin-top: 16px; }
+.form-actions button {
+  padding: 8px 20px;
+  border: none;
+  border-radius: 6px;
+  font-family: inherit;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  margin-right: 8px;
+}
+.btn-primary { background: var(--primary-blue); color: #fff; }
+.btn-primary:hover { background: var(--dark-blue); }
+.btn-success { background: var(--primary-green); color: #fff; }
+.btn-success:hover { background: var(--dark-green); }
+.btn-outline {
+  background: transparent;
+  border: 2px solid var(--primary-blue);
+  color: var(--primary-blue);
+}
+.btn-outline:hover { background: var(--pale-blue); }
+
+.split-row {
+  display: grid;
+  grid-template-columns: 3fr 2fr;
+  gap: 20px;
+  margin-bottom: 20px;
+}
+
+.card-panel {
+  background: var(--white);
+  border-radius: 10px;
+  padding: 20px;
+  box-shadow: 0 1px 4px rgba(0,0,0,0.06);
+  margin-bottom: 16px;
+}
+
+.upload-zone {
+  border: 2px dashed var(--medium-blue);
+  border-radius: 10px;
+  padding: 40px 20px;
+  text-align: center;
+  background: var(--pale-blue);
+  cursor: pointer;
+  transition: background 0.2s;
+}
+.upload-zone:hover { background: var(--light-blue); }
+.upload-zone input[type=file] { display: none; }
+
+.multi-select {
+  width: 100%;
+  max-width: 300px;
+  padding: 6px;
+  border: 1px solid var(--medium-gray);
+  border-radius: 6px;
+  font-family: inherit;
+  font-size: 13px;
+  min-height: 80px;
+}
+
+/* Editable table cells */
+table.data-table td.editable {
+  cursor: text;
+  position: relative;
+}
+table.data-table td.editable:hover {
+  background: #FFF9C4 !important;
+  outline: 2px solid var(--primary-blue);
+  outline-offset: -2px;
+}
+table.data-table td.editable input {
+  width: 100%;
+  border: none;
+  background: #FFF9C4;
+  font-family: inherit;
+  font-size: 13px;
+  padding: 0;
+  outline: none;
+  text-align: right;
+}
+table.data-table td.edited {
+  background: #E8F5E9 !important;
+}
+.edit-toolbar {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+  margin-bottom: 12px;
+  padding: 10px 14px;
+  background: var(--pale-blue);
+  border-radius: 8px;
+  border: 1px solid var(--light-blue);
+}
+.edit-toolbar .edit-count {
+  font-size: 13px;
+  color: var(--dark-blue);
+  font-weight: 600;
+}
+.edit-toolbar .edit-hint {
+  font-size: 12px;
+  color: var(--text-secondary);
+  flex: 1;
+}
+
+.arch-table { width: 100%; border-collapse: collapse; font-size: 13px; margin-top: 12px; }
+.arch-table th { background: var(--dark-blue); color: #fff; padding: 8px 12px; text-align: left; }
+.arch-table td { padding: 8px 12px; border-bottom: 1px solid #eee; }
+.arch-table tr:nth-child(even) { background: var(--pale-blue); }
+
+.metric-select-inline {
+  padding: 8px 14px;
+  border: 1px solid var(--medium-gray);
+  border-radius: 6px;
+  font-family: inherit;
+  font-size: 14px;
+  margin-bottom: 16px;
+  min-width: 220px;
+}
+
+.hidden { display: none !important; }
+
+/* Toast */
+.toast {
+  position: fixed;
+  bottom: 24px;
+  right: 24px;
+  background: var(--dark-blue);
+  color: #fff;
+  padding: 12px 24px;
+  border-radius: 8px;
+  font-size: 14px;
+  z-index: 9999;
+  opacity: 0;
+  transition: opacity 0.3s;
+  pointer-events: none;
+}
+.toast.show { opacity: 1; pointer-events: auto; }
+</style>
+</head>
+<body>
+
+<!-- Sidebar -->
+<nav class="sidebar">
+  <div class="sidebar-logo">
+    <h2>BlueRidge Life Sciences</h2>
+    <div class="subtitle">Executive Dashboard</div>
+  </div>
+
+  <div class="sidebar-section">
+    <div class="sidebar-section-label">Navigation</div>
+    <button class="nav-btn active" data-page="executive">Executive Summary</button>
+    <button class="nav-btn" data-page="division">Division Detail</button>
+    <button class="nav-btn" data-page="metric">Metric Deep Dive</button>
+    <button class="nav-btn" data-page="comparison">Division Comparison</button>
+    <button class="nav-btn" data-page="data">Data Management</button>
+    <button class="nav-btn" data-page="integration">Integration Setup</button>
+  </div>
+
+  <div class="sidebar-section">
+    <div class="sidebar-section-label">Filters</div>
+    <div class="sidebar-select-group">
+      <label>Time Range</label>
+      <select id="timeRange">
+        <option>Month</option>
+        <option selected>Quarter</option>
+        <option>Current Year</option>
+        <option>Trailing 12 Months</option>
+        <option>Custom Range</option>
+      </select>
+    </div>
+    <div class="sidebar-select-group hidden" id="customRangeGroup">
+      <label>Start Date</label>
+      <input type="date" id="customStart" style="width:100%;padding:8px 10px;border-radius:6px;border:1px solid rgba(255,255,255,0.2);background:rgba(255,255,255,0.08);color:#fff;font-family:inherit;font-size:13px;">
+      <label style="margin-top:8px;">End Date</label>
+      <input type="date" id="customEnd" style="width:100%;padding:8px 10px;border-radius:6px;border:1px solid rgba(255,255,255,0.2);background:rgba(255,255,255,0.08);color:#fff;font-family:inherit;font-size:13px;">
+      <button class="btn-primary" id="applyCustomRange" style="width:100%;margin-top:8px;padding:8px;font-size:13px;">Apply Range</button>
+    </div>
+    <div class="sidebar-select-group">
+      <label>Entity</label>
+      <select id="entitySelect">
+        <option>BlueRidge Life Sciences</option>
+        <option>Clintrex</option>
+        <option>ToxStrategies</option>
+        <option>Suttons Creek</option>
+        <option>Modality</option>
+        <option>Design Science</option>
+      </select>
+    </div>
+  </div>
+
+  <div class="sidebar-section">
+    <button class="sidebar-export-btn" id="exportBtn">Export to PowerPoint</button>
+  </div>
+</nav>
+
+<!-- Main -->
+<div class="main-area">
+  <div class="header-bar">
+    <div>
+      <h1 id="headerTitle">Executive Summary</h1>
+      <div class="header-sub" id="headerSub">BlueRidge Life Sciences | Quarter</div>
+    </div>
+    <div style="color:var(--light-blue);font-size:12px;" id="headerDate"></div>
+  </div>
+  <div class="green-divider"></div>
+
+  <div class="content">
+    <!-- Page: Executive Summary -->
+    <div id="page-executive" class="page-content"></div>
+    <!-- Page: Division Detail -->
+    <div id="page-division" class="page-content hidden"></div>
+    <!-- Page: Metric Deep Dive -->
+    <div id="page-metric" class="page-content hidden"></div>
+    <!-- Page: Division Comparison -->
+    <div id="page-comparison" class="page-content hidden"></div>
+    <!-- Page: Data Management -->
+    <div id="page-data" class="page-content hidden"></div>
+    <!-- Page: Integration Setup -->
+    <div id="page-integration" class="page-content hidden"></div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+// ==================== CONFIG ====================
+const CONFIG = {
+  COMPANY_NAME: "BlueRidge Life Sciences",
+  DIVISIONS: ["Clintrex", "ToxStrategies", "Suttons Creek", "Modality", "Design Science"],
+  METRICS: ["Pipeline", "Weighted Pipeline", "Closed Sales", "Win Rate", "Revenue", "EBITDA", "Cash Collections", "Utilization", "Headcount", "Backlog", "FTE"],
+  CURRENCY_METRICS: ["Pipeline", "Weighted Pipeline", "Closed Sales", "Revenue", "EBITDA", "Cash Collections", "Backlog"],
+  PERCENT_METRICS: ["Win Rate", "Utilization"],
+  COUNT_METRICS: ["Headcount", "FTE"],
+  // Point-in-time metrics: aggregate = most recent value (not summed/averaged over period)
+  POINT_IN_TIME_METRICS: ["Pipeline", "Weighted Pipeline", "Win Rate", "Utilization", "Headcount", "Backlog", "FTE"],
+  // Additive metrics: aggregate = sum over period
+  ADDITIVE_METRICS: ["Closed Sales", "Revenue", "EBITDA", "Cash Collections"],
+  TIME_RANGES: ["Month", "Quarter", "Current Year", "Trailing 12 Months", "Custom Range"],
+  COLORS: {
+    primary_blue: "#0066B3", dark_blue: "#003D6B", medium_blue: "#2E86C1",
+    light_blue: "#AED6F1", pale_blue: "#D6EAF8",
+    primary_green: "#7AB648", dark_green: "#4A7A2E", medium_green: "#5DAE3B",
+    light_green: "#ABEBC6", pale_green: "#D5F5E3",
+    white: "#FFFFFF", light_gray: "#F8F9FA", medium_gray: "#BDC3C7",
+    dark_gray: "#2C3E50", text_primary: "#1A1A2E", text_secondary: "#566573",
+    positive: "#27AE60", negative: "#E74C3C", neutral: "#7F8C8D"
+  },
+  DIVISION_COLORS: {
+    "Clintrex": "#0066B3", "ToxStrategies": "#7AB648", "Suttons Creek": "#2E86C1",
+    "Modality": "#003D6B", "Design Science": "#5DAE3B", "BlueRidge Life Sciences": "#1A1A2E"
+  },
+  DATA_SOURCES: {
+    "Pipeline": "Salesforce", "Weighted Pipeline": "Salesforce", "Closed Sales": "Salesforce",
+    "Win Rate": "Salesforce", "Utilization": "Kantata", "Revenue": "NetSuite",
+    "EBITDA": "NetSuite", "Cash Collections": "NetSuite", "Headcount": "ADP/HRIS",
+    "Backlog": "Kantata", "FTE": "ADP/HRIS"
+  },
+  DIVISION_PROFILES: {
+    "Clintrex":       { "Pipeline":45e6,"Weighted Pipeline":22e6,"Closed Sales":18e6,"Win Rate":42,"Revenue":32e6,"EBITDA":6.4e6,"Cash Collections":30e6,"Utilization":72,"Headcount":180,"Backlog":38e6,"FTE":165 },
+    "ToxStrategies":  { "Pipeline":28e6,"Weighted Pipeline":14e6,"Closed Sales":11e6,"Win Rate":38,"Revenue":22e6,"EBITDA":4.8e6,"Cash Collections":20.5e6,"Utilization":68,"Headcount":120,"Backlog":24e6,"FTE":108 },
+    "Suttons Creek":  { "Pipeline":15e6,"Weighted Pipeline":8e6,"Closed Sales":6.5e6,"Win Rate":45,"Revenue":12e6,"EBITDA":2.8e6,"Cash Collections":11.2e6,"Utilization":75,"Headcount":45,"Backlog":14e6,"FTE":40 },
+    "Modality":       { "Pipeline":20e6,"Weighted Pipeline":10e6,"Closed Sales":8.5e6,"Win Rate":40,"Revenue":16e6,"EBITDA":3.2e6,"Cash Collections":14.8e6,"Utilization":70,"Headcount":85,"Backlog":18e6,"FTE":76 },
+    "Design Science": { "Pipeline":12e6,"Weighted Pipeline":6.5e6,"Closed Sales":5e6,"Win Rate":44,"Revenue":10e6,"EBITDA":2.2e6,"Cash Collections":9.2e6,"Utilization":74,"Headcount":60,"Backlog":11e6,"FTE":54 }
+  }
+};
+CONFIG.ALL_ENTITIES = [CONFIG.COMPANY_NAME, ...CONFIG.DIVISIONS];
+
+// ==================== SEEDED PRNG (mulberry32) ====================
+function mulberry32(a) {
+  return function() {
+    a |= 0; a = a + 0x6D2B79F5 | 0;
+    var t = Math.imul(a ^ a >>> 15, 1 | a);
+    t = t + Math.imul(t ^ t >>> 7, 61 | t) ^ t;
+    return ((t ^ t >>> 14) >>> 0) / 4294967296;
+  };
+}
+
+function seededNormal(rng) {
+  // Box-Muller
+  let u1 = rng(), u2 = rng();
+  while (u1 === 0) u1 = rng();
+  return Math.sqrt(-2 * Math.log(u1)) * Math.cos(2 * Math.PI * u2);
+}
+
+// ==================== DATA GENERATION ====================
+let dashboardData = null; // {dates:[], divisions:{divName:{metric:[values]}}, company:{metric:[values]}}
+
+function generateData() {
+  const rng = mulberry32(42);
+  const endDate = new Date(2026, 2, 15); // March 15, 2026
+  const weeks = 78; // ~18 months
+  const dates = [];
+  for (let i = weeks - 1; i >= 0; i--) {
+    const d = new Date(endDate);
+    d.setDate(d.getDate() - i * 7);
+    // Snap to Sunday
+    const day = d.getDay();
+    d.setDate(d.getDate() - day);
+    dates.push(new Date(d));
+  }
+
+  function getSeasonal(d) {
+    const m = d.getMonth();
+    if (m >= 9) return 1.12; // Oct-Dec
+    if (m <= 2) return 0.90; // Jan-Mar
+    if (m <= 5) return 1.02; // Apr-Jun
+    return 0.98; // Jul-Sep
+  }
+
+  const divisions = {};
+  for (const div of CONFIG.DIVISIONS) {
+    divisions[div] = {};
+    const profile = CONFIG.DIVISION_PROFILES[div];
+    for (const metric of CONFIG.METRICS) {
+      const base = profile[metric];
+      const isPointInTime = CONFIG.POINT_IN_TIME_METRICS.includes(metric);
+      const isAdditive = CONFIG.ADDITIVE_METRICS.includes(metric);
+      const isCurrency = CONFIG.CURRENCY_METRICS.includes(metric);
+      const isCount = CONFIG.COUNT_METRICS.includes(metric);
+      const isPercent = CONFIG.PERCENT_METRICS.includes(metric);
+      const values = [];
+      for (let i = 0; i < dates.length; i++) {
+        const d = dates[i];
+        const seasonal = getSeasonal(d);
+        const progress = i / (dates.length - 1);
+        const trend = 1.0 + 0.08 * progress;
+        if (metric === "Headcount") {
+          // Headcount: point-in-time, gradual growth with small integer fluctuations
+          const growthTrend = 1.0 + 0.06 * progress;
+          const noise = Math.round(seededNormal(rng) * 1.5);
+          values.push(Math.max(1, Math.round(base * growthTrend) + noise));
+        } else if (metric === "FTE") {
+          // FTE: point-in-time, gradual growth with decimal fluctuations
+          const growthTrend = 1.0 + 0.06 * progress;
+          const noise = seededNormal(rng) * 1.2;
+          values.push(Math.max(0.5, Math.round((base * growthTrend + noise) * 10) / 10));
+        } else if (isPercent) {
+          // Win Rate, Utilization: point-in-time percentage
+          const noise = seededNormal(rng) * 3.5;
+          let val = base * seasonal * trend * 0.98 + noise;
+          val = Math.max(10, Math.min(95, val));
+          values.push(val);
+        } else if (isPointInTime && isCurrency) {
+          // Pipeline, Weighted Pipeline: point-in-time dollar values (full balance, not weekly increments)
+          const noise = 1.0 + seededNormal(rng) * 0.08;
+          values.push(Math.max(0, base * seasonal * trend * noise));
+        } else if (isAdditive) {
+          // Closed Sales, Revenue, EBITDA, Cash Collections: weekly additive increments
+          const weeklyBase = base / 52;
+          const noise = 1.0 + seededNormal(rng) * 0.12;
+          values.push(Math.max(0, weeklyBase * seasonal * trend * noise));
+        } else {
+          // Fallback
+          const noise = seededNormal(rng) * 3.5;
+          let val = base * seasonal * trend * 0.98 + noise;
+          val = Math.max(10, Math.min(95, val));
+          values.push(val);
+        }
+      }
+      divisions[div][metric] = values;
+    }
+  }
+
+  // Company totals
+  const company = {};
+  for (const metric of CONFIG.METRICS) {
+    const isPercent = CONFIG.PERCENT_METRICS.includes(metric);
+    const vals = [];
+    for (let i = 0; i < dates.length; i++) {
+      let sum = 0;
+      for (const div of CONFIG.DIVISIONS) sum += divisions[div][metric][i];
+      if (isPercent) {
+        vals.push(sum / CONFIG.DIVISIONS.length);
+      } else if (metric === "Headcount") {
+        vals.push(Math.round(sum));
+      } else if (metric === "FTE") {
+        vals.push(Math.round(sum * 10) / 10);
+      } else {
+        vals.push(sum);
+      }
+    }
+    company[metric] = vals;
+  }
+
+  dashboardData = { dates, divisions, company };
+}
+
+// ==================== DATA QUERIES ====================
+function getEntityData(entity) {
+  if (entity === CONFIG.COMPANY_NAME) return dashboardData.company;
+  return dashboardData.divisions[entity];
+}
+
+function filterByTimeRange(timeRange) {
+  const dates = dashboardData.dates;
+  const last = dates[dates.length - 1];
+
+  // Custom Range uses the date picker values
+  if (timeRange === "Custom Range") {
+    const startEl = document.getElementById("customStart");
+    const endEl = document.getElementById("customEnd");
+    if (startEl && endEl && startEl.value && endEl.value) {
+      const startDate = new Date(startEl.value + "T00:00:00");
+      const endDate = new Date(endEl.value + "T23:59:59");
+      const indices = [];
+      for (let i = 0; i < dates.length; i++) {
+        if (dates[i] >= startDate && dates[i] <= endDate) indices.push(i);
+      }
+      return indices.length ? indices : [dates.length - 1]; // fallback to latest if empty
+    }
+    // Fallback: last 91 days if pickers not yet set
+    const cutoff = new Date(last); cutoff.setDate(cutoff.getDate() - 91);
+    const indices = [];
+    for (let i = 0; i < dates.length; i++) { if (dates[i] >= cutoff) indices.push(i); }
+    return indices;
+  }
+
+  let cutoff;
+  if (timeRange === "Month") {
+    cutoff = new Date(last); cutoff.setDate(cutoff.getDate() - 30);
+  } else if (timeRange === "Quarter") {
+    cutoff = new Date(last); cutoff.setDate(cutoff.getDate() - 91);
+  } else if (timeRange === "Current Year") {
+    cutoff = new Date(last.getFullYear(), 0, 1);
+  } else {
+    // Trailing 12 Months
+    cutoff = new Date(last); cutoff.setDate(cutoff.getDate() - 365);
+  }
+  const indices = [];
+  for (let i = 0; i < dates.length; i++) {
+    if (dates[i] >= cutoff) indices.push(i);
+  }
+  return indices;
+}
+
+function getPriorPeriodIndices(timeRange) {
+  const dates = dashboardData.dates;
+  const last = dates[dates.length - 1];
+  let days;
+
+  if (timeRange === "Custom Range") {
+    const startEl = document.getElementById("customStart");
+    const endEl = document.getElementById("customEnd");
+    if (startEl && endEl && startEl.value && endEl.value) {
+      const startDate = new Date(startEl.value + "T00:00:00");
+      const endDate = new Date(endEl.value + "T23:59:59");
+      days = Math.max(1, Math.round((endDate - startDate) / 86400000));
+      const cutoffEnd = new Date(startDate);
+      cutoffEnd.setDate(cutoffEnd.getDate() - 1);
+      const cutoffStart = new Date(cutoffEnd);
+      cutoffStart.setDate(cutoffStart.getDate() - days);
+      const indices = [];
+      for (let i = 0; i < dates.length; i++) {
+        if (dates[i] >= cutoffStart && dates[i] <= cutoffEnd) indices.push(i);
+      }
+      return indices;
+    }
+    days = 91; // fallback
+  } else if (timeRange === "Month") days = 30;
+  else if (timeRange === "Quarter") days = 91;
+  else if (timeRange === "Current Year") {
+    days = Math.floor((last - new Date(last.getFullYear(), 0, 1)) / 86400000);
+  } else days = 365;
+
+  const cutoffEnd = new Date(last); cutoffEnd.setDate(cutoffEnd.getDate() - days);
+  const cutoffStart = new Date(cutoffEnd); cutoffStart.setDate(cutoffStart.getDate() - days);
+  const indices = [];
+  for (let i = 0; i < dates.length; i++) {
+    if (dates[i] >= cutoffStart && dates[i] < cutoffEnd) indices.push(i);
+  }
+  return indices;
+}
+
+function aggregateForPeriod(data, metric, indices) {
+  if (!indices.length) return 0;
+  const isPointInTime = CONFIG.POINT_IN_TIME_METRICS.includes(metric);
+  const vals = indices.map(i => data[metric][i]);
+
+  if (isPointInTime) {
+    // Point-in-time: use the most recent value in the period
+    const latest = vals[vals.length - 1];
+    if (metric === "Headcount") return Math.round(latest);
+    return latest; // FTE keeps decimals, currency/percent as-is
+  }
+  // Additive metrics (Closed Sales, Revenue, EBITDA, Cash Collections): sum over period
+  return vals.reduce((a, b) => a + b, 0);
+}
+
+function computeDelta(current, prior) {
+  if (!prior || Math.abs(prior) < 1e-9) return 0;
+  return ((current - prior) / Math.abs(prior)) * 100;
+}
+
+function formatValue(val, metric) {
+  if (metric === "FTE") return val.toFixed(1);
+  if (CONFIG.COUNT_METRICS.includes(metric)) return Math.round(val).toLocaleString();
+  if (CONFIG.PERCENT_METRICS.includes(metric)) return val.toFixed(1) + "%";
+  if (Math.abs(val) >= 1e6) return "$" + (val / 1e6).toFixed(1) + "M";
+  if (Math.abs(val) >= 1e3) return "$" + Math.round(val / 1e3).toLocaleString() + "K";
+  return "$" + Math.round(val).toLocaleString();
+}
+
+function formatDate(d) {
+  return (d.getMonth()+1) + "/" + d.getDate() + "/" + d.getFullYear();
+}
+
+function recalcCompanyTotals() {
+  for (const metric of CONFIG.METRICS) {
+    const isPercent = CONFIG.PERCENT_METRICS.includes(metric);
+    for (let i = 0; i < dashboardData.dates.length; i++) {
+      let sum = 0;
+      for (const div of CONFIG.DIVISIONS) sum += dashboardData.divisions[div][metric][i];
+      if (isPercent) {
+        dashboardData.company[metric][i] = sum / CONFIG.DIVISIONS.length;
+      } else if (metric === "Headcount") {
+        dashboardData.company[metric][i] = Math.round(sum);
+      } else if (metric === "FTE") {
+        dashboardData.company[metric][i] = Math.round(sum * 10) / 10;
+      } else {
+        dashboardData.company[metric][i] = sum;
+      }
+    }
+  }
+}
+
+function getKPIs(entity, timeRange) {
+  const data = getEntityData(entity);
+  const currIdx = filterByTimeRange(timeRange);
+  const priorIdx = getPriorPeriodIndices(timeRange);
+  return CONFIG.METRICS.map(metric => {
+    const current = aggregateForPeriod(data, metric, currIdx);
+    const prior = aggregateForPeriod(data, metric, priorIdx);
+    const delta = computeDelta(current, prior);
+    return { metric, current, prior, delta, source: CONFIG.DATA_SOURCES[metric] };
+  });
+}
+
+function getTrendData(entity, metric) {
+  const data = getEntityData(entity);
+  return { dates: dashboardData.dates, values: data[metric] };
+}
+
+function getComparisonData(metric, timeRange) {
+  const currIdx = filterByTimeRange(timeRange);
+  return CONFIG.DIVISIONS.map(div => {
+    const data = dashboardData.divisions[div];
+    return { division: div, value: aggregateForPeriod(data, metric, currIdx) };
+  }).sort((a, b) => b.value - a.value);
+}
+
+// ==================== UI STATE ====================
+let currentPage = "executive";
+let selectedTimeRange = "Quarter";
+let selectedEntity = "BlueRidge Life Sciences";
+let divisionDetailTab = 0;
+let metricDeepDiveMetric = "Revenue";
+let dataManagementTab = 0;
+
+const pageNames = {
+  executive: "Executive Summary",
+  division: "Division Detail",
+  metric: "Metric Deep Dive",
+  comparison: "Division Comparison",
+  data: "Data Management",
+  integration: "Integration Setup"
+};
+
+// ==================== PLOTLY LAYOUT BASE ====================
+function plotlyLayout(title, extra) {
+  return Object.assign({
+    title: { text: title, font: { family: "Times New Roman, Times, serif", size: 16, color: CONFIG.COLORS.dark_blue } },
+    font: { family: "Times New Roman, Times, serif", size: 12 },
+    paper_bgcolor: "#fff", plot_bgcolor: "#fff",
+    margin: { l: 60, r: 30, t: 50, b: 50 },
+    hovermode: "x unified"
+  }, extra || {});
+}
+
+function plotlyConfig() {
+  return { responsive: false, displayModeBar: false };
+}
+
+function plotlyRender(containerId, data, layout, config) {
+  const el = document.getElementById(containerId);
+  if (!el) return;
+  const rect = el.getBoundingClientRect();
+  layout.width = rect.width > 50 ? rect.width - 32 : 500;
+  layout.height = layout.height || 400;
+  layout.autosize = false;
+  Plotly.newPlot(containerId, data, layout, config || plotlyConfig());
+}
+
+// ==================== TOAST ====================
+function showToast(msg) {
+  const t = document.getElementById("toast");
+  t.textContent = msg;
+  t.classList.add("show");
+  setTimeout(() => t.classList.remove("show"), 2500);
+}
+
+// ==================== RENDER FUNCTIONS ====================
+
+function renderKPICards(container, entity, timeRange) {
+  const kpis = getKPIs(entity, timeRange);
+  // Row 1: first 4, Row 2: next 4, Row 3: remaining
+  let html = '<div class="kpi-row">';
+  kpis.slice(0, 4).forEach(k => { html += kpiCardHTML(k); });
+  html += '</div><div class="kpi-row">';
+  kpis.slice(4, 8).forEach(k => { html += kpiCardHTML(k); });
+  html += '</div><div class="kpi-row" style="grid-template-columns:repeat(' + Math.min(kpis.length - 8, 4) + ',1fr);">';
+  kpis.slice(8).forEach(k => { html += kpiCardHTML(k); });
+  html += '</div>';
+  container.innerHTML = html;
+}
+
+function kpiCardHTML(k) {
+  const cls = k.delta > 0.5 ? "positive" : k.delta < -0.5 ? "negative" : "neutral";
+  const arrow = k.delta > 0.5 ? "\u25B2" : k.delta < -0.5 ? "\u25BC" : "\u25CF";
+  return `<div class="kpi-card">
+    <div class="kpi-label">${k.metric}</div>
+    <div class="kpi-value">${formatValue(k.current, k.metric)}</div>
+    <div class="kpi-delta ${cls}">${arrow} ${Math.abs(k.delta).toFixed(1)}% vs prior period</div>
+    <div class="kpi-source">Source: ${k.source}</div>
+  </div>`;
+}
+
+function createTrendChart(containerId, entity, metric, height) {
+  const td = getTrendData(entity, metric);
+  const color = CONFIG.DIVISION_COLORS[entity] || CONFIG.COLORS.primary_blue;
+  const isPercent = CONFIG.PERCENT_METRICS.includes(metric);
+  const isCount = CONFIG.COUNT_METRICS.includes(metric);
+  const isFTE = metric === "FTE";
+  const hoverTpl = isFTE ? "%{y:.1f}<extra></extra>" : isCount ? "%{y:,.0f}<extra></extra>" : isPercent ? "%{y:.1f}%<extra></extra>" : "$%{y:,.0f}<extra></extra>";
+  const tickFmt = isFTE ? ",.1f" : isCount ? ",.0f" : isPercent ? ".0f" : "$,.0s";
+  plotlyRender(containerId, [{
+    x: td.dates, y: td.values, type: "scatter", mode: "lines",
+    line: { color, width: 2.5 },
+    hovertemplate: hoverTpl,
+    name: metric
+  }], plotlyLayout(metric + " Trend", {
+    height: height || 400,
+    yaxis: { tickformat: tickFmt, title: "" },
+    xaxis: { title: "" }
+  }));
+}
+
+function createMultiTrendChart(containerId, metrics, entity, height) {
+  const traces = metrics.map((metric, i) => {
+    const td = getTrendData(entity, metric);
+    const colors = [CONFIG.COLORS.primary_blue, CONFIG.COLORS.primary_green, CONFIG.COLORS.medium_blue, CONFIG.COLORS.dark_blue];
+    const isPercent = CONFIG.PERCENT_METRICS.includes(metric);
+    return {
+      x: td.dates, y: td.values, type: "scatter", mode: "lines",
+      line: { color: colors[i % colors.length], width: 2 },
+      name: metric,
+      yaxis: i >= 1 && CONFIG.PERCENT_METRICS.includes(metric) !== CONFIG.PERCENT_METRICS.includes(metrics[0]) ? "y2" : "y",
+      hovertemplate: isPercent ? metric + ": %{y:.1f}%<extra></extra>" : metric + ": $%{y:,.0f}<extra></extra>"
+    };
+  });
+  const hasPercent = metrics.some(m => CONFIG.PERCENT_METRICS.includes(m));
+  const hasCurrency = metrics.some(m => CONFIG.CURRENCY_METRICS.includes(m));
+  const layout = plotlyLayout(metrics.join(" & "), {
+    height: height || 320,
+    yaxis: { tickformat: hasCurrency ? "$,.0s" : ".0f", title: "" },
+    xaxis: { title: "" },
+    legend: { orientation: "h", y: -0.15 }
+  });
+  if (hasPercent && hasCurrency) {
+    layout.yaxis2 = { tickformat: ".0f", overlaying: "y", side: "right", title: "" };
+  }
+  plotlyRender(containerId, traces, layout);
+}
+
+function createComparisonBarChart(containerId, metric, timeRange, height) {
+  const comp = getComparisonData(metric, timeRange);
+  const colors = comp.map(c => CONFIG.DIVISION_COLORS[c.division]);
+  const isPercent = CONFIG.PERCENT_METRICS.includes(metric);
+  const isCount = CONFIG.COUNT_METRICS.includes(metric);
+  const isFTE = metric === "FTE";
+  const hoverTpl = isFTE ? "%{x}: %{y:.1f}<extra></extra>" : isCount ? "%{x}: %{y:,.0f}<extra></extra>" : isPercent ? "%{x}: %{y:.1f}%<extra></extra>" : "%{x}: $%{y:,.0f}<extra></extra>";
+  const tickFmt = isFTE ? ",.1f" : isCount ? ",.0f" : isPercent ? ".0f" : "$,.0s";
+  plotlyRender(containerId, [{
+    x: comp.map(c => c.division), y: comp.map(c => c.value), type: "bar",
+    marker: { color: colors },
+    hovertemplate: hoverTpl
+  }], plotlyLayout(metric + " by Division", {
+    height: height || 400,
+    yaxis: { tickformat: tickFmt },
+    xaxis: { title: "" }
+  }));
+}
+
+function createPieChart(containerId, metric, timeRange, height) {
+  const comp = getComparisonData(metric, timeRange);
+  const colors = comp.map(c => CONFIG.DIVISION_COLORS[c.division]);
+  plotlyRender(containerId, [{
+    labels: comp.map(c => c.division), values: comp.map(c => c.value),
+    type: "pie", marker: { colors },
+    textinfo: "label+percent",
+    hovertemplate: "%{label}: " + (CONFIG.PERCENT_METRICS.includes(metric) ? "%{value:.1f}%" : "$%{value:,.0f}") + "<extra></extra>"
+  }], plotlyLayout(metric + " Breakdown", { height: height || 400 }));
+}
+
+// ==================== PAGE RENDERERS ====================
+
+function renderExecutiveSummary() {
+  const el = document.getElementById("page-executive");
+  el.innerHTML = `
+    <div class="section-header">Key Performance Indicators</div>
+    <div id="exec-kpis"></div>
+    <div class="section-header">Performance Trends</div>
+    <div class="chart-row"><div class="chart-box" id="exec-chart-rev-ebitda"></div><div class="chart-box" id="exec-chart-pipe-wr"></div></div>
+    <div class="chart-row"><div class="chart-box" id="exec-chart-cc-util"></div><div class="chart-box" id="exec-chart-cs-wp"></div></div>
+    <div class="chart-row"><div class="chart-box" id="exec-chart-backlog"></div><div class="chart-box" id="exec-chart-backlog-bar"></div></div>
+    <div class="chart-row"><div class="chart-box" id="exec-chart-hc-fte"></div><div class="chart-box" id="exec-chart-hc-bar"></div></div>
+  `;
+  renderKPICards(document.getElementById("exec-kpis"), selectedEntity, selectedTimeRange);
+  createMultiTrendChart("exec-chart-rev-ebitda", ["Revenue", "EBITDA"], selectedEntity, 300);
+  createMultiTrendChart("exec-chart-pipe-wr", ["Pipeline", "Win Rate"], selectedEntity, 300);
+  createMultiTrendChart("exec-chart-cc-util", ["Cash Collections", "Utilization"], selectedEntity, 300);
+  createMultiTrendChart("exec-chart-cs-wp", ["Closed Sales", "Weighted Pipeline"], selectedEntity, 300);
+  createTrendChart("exec-chart-backlog", selectedEntity, "Backlog", 300);
+  createComparisonBarChart("exec-chart-backlog-bar", "Backlog", selectedTimeRange, 300);
+  createMultiTrendChart("exec-chart-hc-fte", ["Headcount", "FTE"], selectedEntity, 300);
+  createComparisonBarChart("exec-chart-hc-bar", "Headcount", selectedTimeRange, 300);
+}
+
+function renderDivisionDetail() {
+  const el = document.getElementById("page-division");
+  const entity = selectedEntity === CONFIG.COMPANY_NAME ? "Clintrex" : selectedEntity;
+  let tabs = CONFIG.METRICS.map((m, i) =>
+    `<button class="tab-btn ${i === divisionDetailTab ? "active" : ""}" data-divtab="${i}">${m}</button>`
+  ).join("");
+  el.innerHTML = `
+    <div class="section-header">${entity} - Key Performance Indicators</div>
+    <div id="div-kpis"></div>
+    <div class="section-header">Metric Details</div>
+    <div class="tab-bar" id="div-tabs">${tabs}</div>
+    <div class="split-row">
+      <div class="chart-box" id="div-trend-chart"></div>
+      <div class="card-panel" id="div-ranking"></div>
+    </div>
+  `;
+  renderKPICards(document.getElementById("div-kpis"), entity, selectedTimeRange);
+
+  const metric = CONFIG.METRICS[divisionDetailTab];
+  createTrendChart("div-trend-chart", entity, metric, 360);
+
+  // Ranking
+  const comp = getComparisonData(metric, selectedTimeRange);
+  let rankHTML = `<h3 style="color:var(--dark-blue);margin-bottom:12px;">${metric} - By Division</h3><ul class="ranking-list">`;
+  comp.forEach((c, i) => {
+    rankHTML += `<li><span class="ranking-rank">${i + 1}</span><span class="ranking-name">${c.division}</span><span class="ranking-value">${formatValue(c.value, metric)}</span></li>`;
+  });
+  rankHTML += "</ul>";
+  document.getElementById("div-ranking").innerHTML = rankHTML;
+
+  document.getElementById("div-tabs").addEventListener("click", e => {
+    if (e.target.dataset.divtab !== undefined) {
+      divisionDetailTab = parseInt(e.target.dataset.divtab);
+      renderDivisionDetail();
+    }
+  });
+}
+
+function renderMetricDeepDive() {
+  const el = document.getElementById("page-metric");
+  const opts = CONFIG.METRICS.map(m => `<option ${m === metricDeepDiveMetric ? "selected" : ""}>${m}</option>`).join("");
+  el.innerHTML = `
+    <div class="section-header">Metric Analysis</div>
+    <select class="metric-select-inline" id="metricDDSelect">${opts}</select>
+    <div class="split-row">
+      <div class="chart-box" id="mdd-trend"></div>
+      <div class="chart-box" id="mdd-pie"></div>
+    </div>
+    <div class="chart-full" id="mdd-bar"></div>
+    <div class="section-header">Data Table</div>
+    <div class="data-table-wrap" id="mdd-table"></div>
+  `;
+
+  const metric = metricDeepDiveMetric;
+  createTrendChart("mdd-trend", selectedEntity, metric, 340);
+  if (CONFIG.CURRENCY_METRICS.includes(metric)) {
+    createPieChart("mdd-pie", metric, selectedTimeRange, 340);
+  } else {
+    createComparisonBarChart("mdd-pie", metric, selectedTimeRange, 340);
+  }
+  createComparisonBarChart("mdd-bar", metric, selectedTimeRange, 300);
+
+  // Pivot table
+  const dates = dashboardData.dates;
+  const indices = filterByTimeRange(selectedTimeRange);
+  // Group by month for readability
+  const months = {};
+  indices.forEach(i => {
+    const d = dates[i];
+    const key = d.getFullYear() + "-" + String(d.getMonth()+1).padStart(2,"0");
+    if (!months[key]) months[key] = [];
+    months[key].push(i);
+  });
+  const monthKeys = Object.keys(months).sort();
+  let tableHTML = '<table class="data-table"><thead><tr><th>Division</th>';
+  monthKeys.forEach(mk => { tableHTML += `<th>${mk}</th>`; });
+  tableHTML += "</tr></thead><tbody>";
+  CONFIG.DIVISIONS.forEach(div => {
+    const data = dashboardData.divisions[div];
+    tableHTML += `<tr><td style="font-weight:600">${div}</td>`;
+    monthKeys.forEach(mk => {
+      const val = aggregateForPeriod(data, metric, months[mk]);
+      tableHTML += `<td>${formatValue(val, metric)}</td>`;
+    });
+    tableHTML += "</tr>";
+  });
+  // Company total row
+  tableHTML += `<tr style="font-weight:700;background:var(--light-blue)"><td>${CONFIG.COMPANY_NAME}</td>`;
+  monthKeys.forEach(mk => {
+    const val = aggregateForPeriod(dashboardData.company, metric, months[mk]);
+    tableHTML += `<td>${formatValue(val, metric)}</td>`;
+  });
+  tableHTML += "</tr></tbody></table>";
+  document.getElementById("mdd-table").innerHTML = tableHTML;
+
+  document.getElementById("metricDDSelect").addEventListener("change", e => {
+    metricDeepDiveMetric = e.target.value;
+    renderMetricDeepDive();
+  });
+}
+
+function renderDivisionComparison() {
+  const el = document.getElementById("page-comparison");
+
+  // Summary table
+  const currIdx = filterByTimeRange(selectedTimeRange);
+  let tableHTML = '<table class="data-table"><thead><tr><th>Division</th>';
+  CONFIG.METRICS.forEach(m => { tableHTML += `<th>${m}</th>`; });
+  tableHTML += "</tr></thead><tbody>";
+  CONFIG.DIVISIONS.forEach(div => {
+    const data = dashboardData.divisions[div];
+    tableHTML += `<tr><td style="font-weight:600">${div}</td>`;
+    CONFIG.METRICS.forEach(m => {
+      const val = aggregateForPeriod(data, m, currIdx);
+      tableHTML += `<td>${formatValue(val, m)}</td>`;
+    });
+    tableHTML += "</tr>";
+  });
+  // Company total
+  tableHTML += `<tr style="font-weight:700;background:var(--light-blue)"><td>${CONFIG.COMPANY_NAME}</td>`;
+  CONFIG.METRICS.forEach(m => {
+    const val = aggregateForPeriod(dashboardData.company, m, currIdx);
+    tableHTML += `<td>${formatValue(val, m)}</td>`;
+  });
+  tableHTML += "</tr></tbody></table>";
+
+  el.innerHTML = `
+    <div class="section-header">Enterprise Summary</div>
+    <div class="data-table-wrap">${tableHTML}</div>
+    <div class="section-header">Division Comparisons</div>
+    <div class="chart-row"><div class="chart-box" id="comp-rev-ebitda-bar"></div><div class="chart-box" id="comp-pipe-wp-bar"></div></div>
+    <div class="chart-row"><div class="chart-box" id="comp-cs-wr-bar"></div><div class="chart-box" id="comp-cc-util-bar"></div></div>
+  `;
+
+  // Paired bar charts
+  function pairedBar(containerId, m1, m2) {
+    const comp1 = getComparisonData(m1, selectedTimeRange);
+    const comp2 = getComparisonData(m2, selectedTimeRange);
+    // Sort by first metric order
+    const divOrder = comp1.map(c => c.division);
+    const isP1 = CONFIG.PERCENT_METRICS.includes(m1);
+    const isP2 = CONFIG.PERCENT_METRICS.includes(m2);
+    const traces = [{
+      x: divOrder, y: divOrder.map(d => comp1.find(c => c.division === d).value),
+      type: "bar", name: m1, marker: { color: CONFIG.COLORS.primary_blue },
+      hovertemplate: isP1 ? "%{x}: %{y:.1f}%<extra></extra>" : "%{x}: $%{y:,.0f}<extra></extra>",
+      yaxis: "y"
+    }, {
+      x: divOrder, y: divOrder.map(d => comp2.find(c => c.division === d).value),
+      type: "bar", name: m2, marker: { color: CONFIG.COLORS.primary_green },
+      hovertemplate: isP2 ? "%{x}: %{y:.1f}%<extra></extra>" : "%{x}: $%{y:,.0f}<extra></extra>",
+      yaxis: (isP1 !== isP2) ? "y2" : "y"
+    }];
+    const layout = plotlyLayout(m1 + " & " + m2, {
+      height: 300, barmode: (isP1 !== isP2) ? "group" : "group",
+      yaxis: { tickformat: isP1 ? ".0f" : "$,.0s", title: m1 },
+      legend: { orientation: "h", y: -0.2 }
+    });
+    if (isP1 !== isP2) {
+      layout.yaxis2 = { tickformat: isP2 ? ".0f" : "$,.0s", overlaying: "y", side: "right", title: m2 };
+    }
+    plotlyRender(containerId, traces, layout);
+  }
+
+  pairedBar("comp-rev-ebitda-bar", "Revenue", "EBITDA");
+  pairedBar("comp-pipe-wp-bar", "Pipeline", "Weighted Pipeline");
+  pairedBar("comp-cs-wr-bar", "Closed Sales", "Win Rate");
+  pairedBar("comp-cc-util-bar", "Cash Collections", "Utilization");
+}
+
+function renderDataManagement() {
+  const el = document.getElementById("page-data");
+  const tabs = ["Excel Upload", "Download Template", "Current Data"];
+  const tabHTML = tabs.map((t, i) =>
+    `<button class="tab-btn ${i === dataManagementTab ? "active" : ""}" data-dmtab="${i}">${t}</button>`
+  ).join("");
+
+  el.innerHTML = `
+    <div class="section-header">Data Management</div>
+    <div class="tab-bar" id="dm-tabs">${tabHTML}</div>
+    <div id="dm-content"></div>
+  `;
+
+  const content = document.getElementById("dm-content");
+
+  if (dataManagementTab === 0) {
+    content.innerHTML = `
+      <div class="card-panel">
+        <h3 style="color:var(--dark-blue);margin-bottom:12px;">Upload Excel Data</h3>
+        <p style="color:var(--text-secondary);margin-bottom:16px;">Upload an Excel file (.xlsx) to update dashboard data. Use the template format with columns: Week Ending Date, Division, then one column per metric (Pipeline, Revenue, Headcount, etc.).</p>
+        <div class="upload-zone" id="uploadZone">
+          <input type="file" id="fileUpload" accept=".xlsx,.xls">
+          <div style="font-size:36px;color:var(--primary-blue);margin-bottom:8px;">&#128196;</div>
+          <div style="font-size:14px;color:var(--dark-blue);font-weight:600;">Click to select or drag & drop an Excel file</div>
+          <div style="font-size:12px;color:var(--text-secondary);margin-top:4px;">Supported: .xlsx, .xls</div>
+        </div>
+        <div id="uploadStatus" style="margin-top:16px;"></div>
+      </div>
+    `;
+    document.getElementById("uploadZone").addEventListener("click", () => document.getElementById("fileUpload").click());
+    document.getElementById("fileUpload").addEventListener("change", handleFileUpload);
+  } else if (dataManagementTab === 1) {
+    content.innerHTML = `
+      <div class="card-panel">
+        <h3 style="color:var(--dark-blue);margin-bottom:12px;">Download Data Template</h3>
+        <p style="color:var(--text-secondary);margin-bottom:16px;">Download an Excel template pre-filled with current data. Includes 3 sheets: <strong>Data Entry</strong> (one column per metric — easy to edit), <strong>Instructions</strong> (field descriptions and formats), and <strong>Valid Divisions</strong> (reference list). Modify values and re-upload.</p>
+        <button class="btn-primary" id="downloadTemplateBtn" style="padding:12px 28px;font-size:15px;">Download Template (.xlsx)</button>
+      </div>
+    `;
+    document.getElementById("downloadTemplateBtn").addEventListener("click", downloadTemplate);
+  } else {
+    // Current Data tab with filters and inline editing
+    const divOpts = CONFIG.DIVISIONS.map(d => `<option selected>${d}</option>`).join("");
+    const metOpts = CONFIG.METRICS.map(m => `<option selected>${m}</option>`).join("");
+    content.innerHTML = `
+      <div class="card-panel">
+        <div style="display:flex;gap:20px;margin-bottom:16px;flex-wrap:wrap;align-items:flex-end;">
+          <div>
+            <label style="font-size:13px;font-weight:600;color:var(--dark-blue);display:block;margin-bottom:4px;">Divisions</label>
+            <select multiple class="multi-select" id="dataDivFilter">${divOpts}</select>
+          </div>
+          <div>
+            <label style="font-size:13px;font-weight:600;color:var(--dark-blue);display:block;margin-bottom:4px;">Metrics</label>
+            <select multiple class="multi-select" id="dataMetFilter">${metOpts}</select>
+          </div>
+        </div>
+        <div class="edit-toolbar" id="editToolbar">
+          <span class="edit-hint">Click any metric cell to edit. Tab/Enter to advance. Changes are highlighted in green.</span>
+          <span class="edit-count" id="editCount">0 edits pending</span>
+          <button class="btn-success" id="saveEditsBtn" style="padding:6px 16px;font-size:13px;" disabled>Save All Changes</button>
+          <button class="btn-outline" id="discardEditsBtn" style="padding:6px 16px;font-size:13px;" disabled>Discard</button>
+        </div>
+        <div class="data-table-wrap" id="currentDataTable"></div>
+      </div>
+    `;
+    pendingEdits = {};
+    renderCurrentDataTable();
+    document.getElementById("dataDivFilter").addEventListener("change", () => { pendingEdits = {}; renderCurrentDataTable(); });
+    document.getElementById("dataMetFilter").addEventListener("change", () => { pendingEdits = {}; renderCurrentDataTable(); });
+    document.getElementById("saveEditsBtn").addEventListener("click", applyPendingEdits);
+    document.getElementById("discardEditsBtn").addEventListener("click", () => { pendingEdits = {}; renderCurrentDataTable(); updateEditCount(); });
+  }
+
+  document.getElementById("dm-tabs").addEventListener("click", e => {
+    if (e.target.dataset.dmtab !== undefined) {
+      dataManagementTab = parseInt(e.target.dataset.dmtab);
+      renderDataManagement();
+    }
+  });
+}
+
+let pendingEdits = {}; // key: "idx|div|metric" => newRawValue
+
+function editKey(idx, div, metric) { return idx + "|" + div + "|" + metric; }
+
+function updateEditCount() {
+  const countEl = document.getElementById("editCount");
+  const saveBtn = document.getElementById("saveEditsBtn");
+  const discardBtn = document.getElementById("discardEditsBtn");
+  if (!countEl) return;
+  const n = Object.keys(pendingEdits).length;
+  countEl.textContent = n + " edit" + (n !== 1 ? "s" : "") + " pending";
+  saveBtn.disabled = n === 0;
+  discardBtn.disabled = n === 0;
+  saveBtn.style.opacity = n === 0 ? "0.5" : "1";
+  discardBtn.style.opacity = n === 0 ? "0.5" : "1";
+}
+
+function applyPendingEdits() {
+  let count = 0;
+  for (const [key, value] of Object.entries(pendingEdits)) {
+    const [idxStr, div, metric] = key.split("|");
+    const idx = parseInt(idxStr);
+    if (dashboardData.divisions[div] && dashboardData.divisions[div][metric]) {
+      dashboardData.divisions[div][metric][idx] = value;
+      count++;
+    }
+  }
+  recalcCompanyTotals();
+  pendingEdits = {};
+  renderCurrentDataTable();
+  updateEditCount();
+  showToast("Saved " + count + " edit" + (count !== 1 ? "s" : "") + " successfully — dashboard updated");
+}
+
+function startCellEdit(td, idx, div, metric) {
+  if (td.querySelector("input")) return; // already editing
+  const rawVal = pendingEdits.hasOwnProperty(editKey(idx, div, metric))
+    ? pendingEdits[editKey(idx, div, metric)]
+    : dashboardData.divisions[div][metric][idx];
+  const displayRaw = CONFIG.COUNT_METRICS.includes(metric) ? Math.round(rawVal) : Math.round(rawVal * 100) / 100;
+  const input = document.createElement("input");
+  input.type = "text";
+  input.value = displayRaw;
+  td.textContent = "";
+  td.appendChild(input);
+  input.focus();
+  input.select();
+
+  function commitEdit() {
+    const newVal = parseFloat(input.value);
+    if (!isNaN(newVal)) {
+      const oldVal = dashboardData.divisions[div][metric][idx];
+      const key = editKey(idx, div, metric);
+      if (Math.abs(newVal - oldVal) > 0.001) {
+        pendingEdits[key] = newVal;
+      } else {
+        delete pendingEdits[key];
+      }
+    }
+    td.textContent = formatValue(
+      pendingEdits.hasOwnProperty(editKey(idx, div, metric))
+        ? pendingEdits[editKey(idx, div, metric)]
+        : dashboardData.divisions[div][metric][idx],
+      metric
+    );
+    if (pendingEdits.hasOwnProperty(editKey(idx, div, metric))) {
+      td.classList.add("edited");
+    } else {
+      td.classList.remove("edited");
+    }
+    updateEditCount();
+  }
+
+  input.addEventListener("blur", commitEdit);
+  input.addEventListener("keydown", e => {
+    if (e.key === "Enter" || e.key === "Tab") {
+      e.preventDefault();
+      commitEdit();
+      // Move to next editable cell
+      const allEditable = Array.from(document.querySelectorAll("td.editable"));
+      const currentIdx = allEditable.indexOf(td);
+      if (currentIdx >= 0 && currentIdx < allEditable.length - 1) {
+        allEditable[currentIdx + 1].click();
+      }
+    } else if (e.key === "Escape") {
+      td.textContent = formatValue(dashboardData.divisions[div][metric][idx], metric);
+      if (pendingEdits.hasOwnProperty(editKey(idx, div, metric))) {
+        td.classList.add("edited");
+      }
+    }
+  });
+}
+
+function renderCurrentDataTable() {
+  const divSelect = document.getElementById("dataDivFilter");
+  const metSelect = document.getElementById("dataMetFilter");
+  const selDivs = Array.from(divSelect.selectedOptions).map(o => o.value);
+  const selMets = Array.from(metSelect.selectedOptions).map(o => o.value);
+  const indices = filterByTimeRange(selectedTimeRange);
+  // Show last 20 weeks max for readability
+  const showIdx = indices.slice(-20);
+
+  let html = '<table class="data-table"><thead><tr><th>Date</th><th>Division</th>';
+  selMets.forEach(m => { html += `<th>${m}</th>`; });
+  html += "</tr></thead><tbody>";
+  showIdx.forEach(i => {
+    selDivs.forEach(div => {
+      html += `<tr><td>${formatDate(dashboardData.dates[i])}</td><td>${div}</td>`;
+      selMets.forEach(m => {
+        const key = editKey(i, div, m);
+        const isEdited = pendingEdits.hasOwnProperty(key);
+        const val = isEdited ? pendingEdits[key] : dashboardData.divisions[div][m][i];
+        html += `<td class="editable${isEdited ? " edited" : ""}" data-idx="${i}" data-div="${div}" data-metric="${m}">${formatValue(val, m)}</td>`;
+      });
+      html += "</tr>";
+    });
+  });
+  html += "</tbody></table>";
+  document.getElementById("currentDataTable").innerHTML = html;
+
+  // Attach click handlers to editable cells
+  document.querySelectorAll("td.editable").forEach(td => {
+    td.addEventListener("click", () => {
+      startCellEdit(td, parseInt(td.dataset.idx), td.dataset.div, td.dataset.metric);
+    });
+  });
+
+  updateEditCount();
+}
+
+function handleFileUpload(e) {
+  const file = e.target.files[0];
+  if (!file) return;
+  const status = document.getElementById("uploadStatus");
+  status.innerHTML = '<div style="color:var(--primary-blue);">Processing file...</div>';
+
+  const reader = new FileReader();
+  reader.onload = function(evt) {
+    try {
+      const data = new Uint8Array(evt.target.result);
+      const wb = XLSX.read(data, { type: "array" });
+      const ws = wb.Sheets[wb.SheetNames[0]];
+      const json = XLSX.utils.sheet_to_json(ws);
+
+      if (!json.length) { status.innerHTML = '<div style="color:var(--negative);">Error: No data found in file.</div>'; return; }
+
+      // Detect format: wide (has metric columns) vs long (has Metric/Value columns)
+      const firstRow = json[0];
+      const isWideFormat = CONFIG.METRICS.some(m => firstRow.hasOwnProperty(m));
+
+      let replaced = 0;
+      json.forEach(row => {
+        const div = row.Division || row.division;
+        const dateStr = row["Week Ending Date"] || row.Date || row.date;
+        if (!div || !dateStr || !dashboardData.divisions[div]) return;
+
+        // Parse date
+        let dateObj;
+        if (typeof dateStr === "number") {
+          dateObj = new Date((dateStr - 25569) * 86400000);
+        } else {
+          dateObj = new Date(dateStr);
+        }
+        let closestIdx = 0, closestDiff = Infinity;
+        dashboardData.dates.forEach((d, i) => {
+          const diff = Math.abs(d - dateObj);
+          if (diff < closestDiff) { closestDiff = diff; closestIdx = i; }
+        });
+
+        if (isWideFormat) {
+          // Wide format: each metric is a column
+          CONFIG.METRICS.forEach(metric => {
+            if (row.hasOwnProperty(metric) && dashboardData.divisions[div][metric]) {
+              const value = parseFloat(row[metric]);
+              if (!isNaN(value)) {
+                dashboardData.divisions[div][metric][closestIdx] = value;
+                replaced++;
+              }
+            }
+          });
+        } else {
+          // Long format: Metric + Value columns
+          const metric = row.Metric || row.metric;
+          const value = parseFloat(row.Value || row.value);
+          if (metric && !isNaN(value) && dashboardData.divisions[div][metric]) {
+            dashboardData.divisions[div][metric][closestIdx] = value;
+            replaced++;
+          }
+        }
+      });
+
+      recalcCompanyTotals();
+
+      status.innerHTML = `<div style="color:var(--positive);font-weight:600;">Success! Updated ${replaced} data points from ${json.length} rows. Dashboard will reflect changes.</div>`;
+      showToast("Data uploaded successfully");
+    } catch (err) {
+      status.innerHTML = `<div style="color:var(--negative);">Error parsing file: ${err.message}</div>`;
+    }
+  };
+  reader.readAsArrayBuffer(file);
+}
+
+function downloadTemplate() {
+  const wb = XLSX.utils.book_new();
+  const indices = filterByTimeRange(selectedTimeRange);
+
+  // --- Sheet 1: Data Entry (wide format - one column per metric) ---
+  const dataRows = [];
+  indices.forEach(i => {
+    CONFIG.DIVISIONS.forEach(div => {
+      const row = {
+        "Week Ending Date": formatDate(dashboardData.dates[i]),
+        "Division": div
+      };
+      CONFIG.METRICS.forEach(metric => {
+        row[metric] = Math.round(dashboardData.divisions[div][metric][i] * 100) / 100;
+      });
+      dataRows.push(row);
+    });
+  });
+  const wsData = XLSX.utils.json_to_sheet(dataRows);
+  // Set user-friendly column widths
+  const colWidths = [{ wch: 16 }, { wch: 18 }];
+  CONFIG.METRICS.forEach(m => colWidths.push({ wch: Math.max(m.length + 2, 14) }));
+  wsData["!cols"] = colWidths;
+  // Freeze header row
+  wsData["!freeze"] = { xSplit: 0, ySplit: 1 };
+  XLSX.utils.book_append_sheet(wb, wsData, "Data Entry");
+
+  // --- Sheet 2: Instructions ---
+  const instrRows = [
+    { "Field": "Week Ending Date", "Format": "M/D/YYYY", "Description": "The Sunday date for the reporting week", "Example": "3/15/2026" },
+    { "Field": "Division", "Format": "Text", "Description": "Must match exactly: " + CONFIG.DIVISIONS.join(", "), "Example": "Clintrex" },
+    { "Field": "Pipeline", "Format": "Number ($)", "Description": "Total pipeline value in dollars", "Example": "865384.62" },
+    { "Field": "Weighted Pipeline", "Format": "Number ($)", "Description": "Probability-weighted pipeline value in dollars", "Example": "423076.92" },
+    { "Field": "Closed Sales", "Format": "Number ($)", "Description": "Closed/won deal value in dollars", "Example": "346153.85" },
+    { "Field": "Win Rate", "Format": "Number (%)", "Description": "Win rate as a percentage (e.g. 42 = 42%)", "Example": "42.5" },
+    { "Field": "Revenue", "Format": "Number ($)", "Description": "Recognized revenue in dollars", "Example": "615384.62" },
+    { "Field": "EBITDA", "Format": "Number ($)", "Description": "EBITDA in dollars", "Example": "123076.92" },
+    { "Field": "Cash Collections", "Format": "Number ($)", "Description": "Cash collected in dollars", "Example": "576923.08" },
+    { "Field": "Utilization", "Format": "Number (%)", "Description": "Staff utilization as a percentage (e.g. 72 = 72%)", "Example": "72.3" },
+    { "Field": "Headcount", "Format": "Whole Number", "Description": "Total number of employees", "Example": "180" },
+    { "Field": "Backlog", "Format": "Number ($)", "Description": "Contracted backlog value in dollars (point-in-time snapshot)", "Example": "38000000" },
+    { "Field": "FTE", "Format": "Number (decimal)", "Description": "Full-time equivalent count (e.g. 165.0)", "Example": "165.0" }
+  ];
+  const wsInstr = XLSX.utils.json_to_sheet(instrRows);
+  wsInstr["!cols"] = [{ wch: 20 }, { wch: 14 }, { wch: 55 }, { wch: 14 }];
+  XLSX.utils.book_append_sheet(wb, wsInstr, "Instructions");
+
+  // --- Sheet 3: Valid Divisions (for reference / data validation) ---
+  const divRows = CONFIG.DIVISIONS.map(d => ({ "Valid Divisions": d }));
+  const wsDivs = XLSX.utils.json_to_sheet(divRows);
+  wsDivs["!cols"] = [{ wch: 20 }];
+  XLSX.utils.book_append_sheet(wb, wsDivs, "Valid Divisions");
+
+  XLSX.writeFile(wb, "BlueRidge_Dashboard_Template.xlsx");
+  showToast("Template downloaded");
+}
+
+function renderIntegrationSetup() {
+  const el = document.getElementById("page-integration");
+  const integrations = [
+    { name: "Salesforce", metrics: "Pipeline, Weighted Pipeline, Closed Sales, Win Rate", color: CONFIG.COLORS.primary_blue },
+    { name: "Kantata", metrics: "Utilization, Revenue, Backlog", color: CONFIG.COLORS.primary_green },
+    { name: "NetSuite", metrics: "Revenue, EBITDA, Cash Collections", color: CONFIG.COLORS.medium_blue },
+    { name: "ADP/HRIS", metrics: "Headcount, FTE", color: CONFIG.COLORS.dark_gray }
+  ];
+
+  let formsHTML = integrations.map(int => `
+    <div class="card-panel" style="border-left:4px solid ${int.color};">
+      <h3 style="color:var(--dark-blue);margin-bottom:4px;">${int.name} Configuration</h3>
+      <p style="color:var(--text-secondary);font-size:12px;margin-bottom:16px;">Metrics: ${int.metrics}</p>
+      <div class="form-group"><label>API URL</label><input type="text" placeholder="https://api.${int.name.toLowerCase()}.com/v1"></div>
+      <div class="form-group"><label>API Key</label><input type="text" placeholder="Enter API key"></div>
+      <div class="form-group"><label>API Secret</label><input type="password" placeholder="Enter API secret"></div>
+      <div class="form-group"><label>Sync Frequency</label>
+        <select><option>Every 15 minutes</option><option>Hourly</option><option selected>Daily</option><option>Weekly</option></select>
+      </div>
+      <div class="form-actions">
+        <button class="btn-outline" onclick="showToast('${int.name} connection test successful')">Test Connection</button>
+        <button class="btn-primary" onclick="showToast('${int.name} configuration saved')">Save Configuration</button>
+        <button class="btn-success" onclick="showToast('${int.name} sync initiated')">Sync Now</button>
+      </div>
+    </div>
+  `).join("");
+
+  el.innerHTML = `
+    <div class="section-header">Integration Configuration</div>
+    ${formsHTML}
+    <div class="section-header">Data Flow Architecture</div>
+    <div class="card-panel">
+      <table class="arch-table">
+        <thead><tr><th>Data Source</th><th>Metrics</th><th>Sync Method</th><th>Update Frequency</th><th>Status</th></tr></thead>
+        <tbody>
+          <tr><td>Salesforce</td><td>Pipeline, Weighted Pipeline, Closed Sales, Win Rate</td><td>REST API</td><td>Daily</td><td style="color:var(--positive)">Active</td></tr>
+          <tr><td>Kantata</td><td>Utilization, Revenue, Backlog</td><td>REST API</td><td>Daily</td><td style="color:var(--positive)">Active</td></tr>
+          <tr><td>NetSuite</td><td>Revenue, EBITDA, Cash Collections</td><td>SuiteTalk API</td><td>Daily</td><td style="color:var(--positive)">Active</td></tr>
+          <tr><td>ADP/HRIS</td><td>Headcount, FTE</td><td>REST API</td><td>Weekly</td><td style="color:var(--positive)">Active</td></tr>
+          <tr><td>Excel Upload</td><td>All Metrics</td><td>Manual Upload</td><td>On Demand</td><td style="color:var(--neutral)">Ready</td></tr>
+        </tbody>
+      </table>
+    </div>
+  `;
+}
+
+// ==================== PPTX EXPORT ====================
+async function exportToPPTX() {
+  showToast("Generating PowerPoint...");
+
+  const pptx = new PptxGenJS();
+  pptx.defineLayout({ name: "LAYOUT_WIDE", width: 13.33, height: 7.5 });
+  pptx.layout = "LAYOUT_WIDE";
+
+  const entity = selectedEntity;
+  const timeRange = selectedTimeRange;
+  const isDivision = entity !== CONFIG.COMPANY_NAME;
+
+  // Title Slide
+  let slide = pptx.addSlide();
+  slide.background = { fill: CONFIG.COLORS.dark_blue };
+  slide.addText("BlueRidge Life Sciences", { x: 0.5, y: 1.5, w: 12, h: 1, fontSize: 36, color: "FFFFFF", fontFace: "Times New Roman", bold: true, align: "center" });
+  slide.addText("Executive Dashboard", { x: 0.5, y: 2.6, w: 12, h: 0.8, fontSize: 24, color: "AED6F1", fontFace: "Times New Roman", align: "center" });
+  slide.addText(entity + " | " + timeRange, { x: 0.5, y: 3.6, w: 12, h: 0.6, fontSize: 16, color: "7AB648", fontFace: "Times New Roman", align: "center" });
+  slide.addText(new Date().toLocaleDateString(), { x: 0.5, y: 4.4, w: 12, h: 0.5, fontSize: 14, color: "BDC3C7", fontFace: "Times New Roman", align: "center" });
+
+  // KPI Slide
+  slide = pptx.addSlide();
+  slide.addText("Key Performance Indicators - " + entity, { x: 0.5, y: 0.3, w: 12, h: 0.6, fontSize: 22, color: CONFIG.COLORS.dark_blue.replace("#", ""), fontFace: "Times New Roman", bold: true });
+  const kpis = getKPIs(entity, timeRange);
+  const kpiRows = [kpis.slice(0, 4), kpis.slice(4, 8)];
+  kpiRows.forEach((row, ri) => {
+    row.forEach((k, ci) => {
+      const x = 0.5 + ci * 3.1;
+      const y = 1.2 + ri * 2.8;
+      slide.addShape(pptx.shapes.ROUNDED_RECTANGLE, { x, y, w: 2.9, h: 2.4, rectRadius: 0.1, fill: { color: "D6EAF8" }, line: { color: "AED6F1", width: 1 } });
+      slide.addText(k.metric, { x, y: y + 0.15, w: 2.9, h: 0.4, fontSize: 11, color: "566573", fontFace: "Times New Roman", align: "center" });
+      slide.addText(formatValue(k.current, k.metric), { x, y: y + 0.6, w: 2.9, h: 0.7, fontSize: 22, color: "003D6B", fontFace: "Times New Roman", bold: true, align: "center" });
+      const deltaColor = k.delta > 0.5 ? "27AE60" : k.delta < -0.5 ? "E74C3C" : "7F8C8D";
+      const arrow = k.delta > 0.5 ? "\u25B2" : k.delta < -0.5 ? "\u25BC" : "";
+      slide.addText(arrow + " " + Math.abs(k.delta).toFixed(1) + "% vs prior", { x, y: y + 1.4, w: 2.9, h: 0.4, fontSize: 10, color: deltaColor, fontFace: "Times New Roman", align: "center" });
+      slide.addText("Source: " + k.source, { x, y: y + 1.8, w: 2.9, h: 0.3, fontSize: 8, color: "BDC3C7", fontFace: "Times New Roman", align: "center" });
+    });
+  });
+
+  // Enterprise Summary Table (if company)
+  if (!isDivision) {
+    slide = pptx.addSlide();
+    slide.addText("Enterprise Summary", { x: 0.5, y: 0.3, w: 12, h: 0.6, fontSize: 22, color: CONFIG.COLORS.dark_blue.replace("#", ""), fontFace: "Times New Roman", bold: true });
+    const currIdx = filterByTimeRange(timeRange);
+    const headerRow = [{ text: "Division", options: { bold: true, fill: { color: "003D6B" }, color: "FFFFFF", fontSize: 9 } }];
+    CONFIG.METRICS.forEach(m => { headerRow.push({ text: m, options: { bold: true, fill: { color: "003D6B" }, color: "FFFFFF", fontSize: 9 } }); });
+    const tableRows = [headerRow];
+    CONFIG.DIVISIONS.forEach(div => {
+      const row = [{ text: div, options: { bold: true, fontSize: 9 } }];
+      CONFIG.METRICS.forEach(m => {
+        row.push({ text: formatValue(aggregateForPeriod(dashboardData.divisions[div], m, currIdx), m), options: { fontSize: 9 } });
+      });
+      tableRows.push(row);
+    });
+    slide.addTable(tableRows, { x: 0.3, y: 1.1, w: 12.5, colW: [1.5, 1.2, 1.2, 1.2, 1.0, 1.2, 1.1, 1.3, 1.0, 1.0], border: { color: "BDC3C7", pt: 0.5 }, autoPage: false });
+  }
+
+  // Chart slides - capture Plotly charts as images
+  const chartPairs = [
+    { metrics: ["Revenue", "EBITDA"], title: "Revenue & EBITDA Trends" },
+    { metrics: ["Pipeline", "Win Rate"], title: "Pipeline & Win Rate Trends" },
+    { metrics: ["Cash Collections", "Utilization"], title: "Cash Collections & Utilization Trends" }
+  ];
+
+  for (const pair of chartPairs) {
+    slide = pptx.addSlide();
+    slide.addText(pair.title + " - " + entity, { x: 0.5, y: 0.3, w: 12, h: 0.6, fontSize: 20, color: CONFIG.COLORS.dark_blue.replace("#", ""), fontFace: "Times New Roman", bold: true });
+
+    // Create temporary chart for export
+    const tempDiv = document.createElement("div");
+    tempDiv.style.width = "1100px";
+    tempDiv.style.height = "500px";
+    tempDiv.style.position = "absolute";
+    tempDiv.style.left = "-9999px";
+    document.body.appendChild(tempDiv);
+
+    const traces = pair.metrics.map((metric, i) => {
+      const td = getTrendData(entity, metric);
+      const colors = [CONFIG.COLORS.primary_blue, CONFIG.COLORS.primary_green];
+      return { x: td.dates, y: td.values, type: "scatter", mode: "lines", line: { color: colors[i], width: 2 }, name: metric };
+    });
+
+    await Plotly.newPlot(tempDiv, traces, plotlyLayout(pair.title, { width: 1100, height: 500 }), { staticPlot: true });
+    try {
+      const imgData = await Plotly.toImage(tempDiv, { format: "png", width: 1100, height: 500 });
+      slide.addImage({ data: imgData, x: 0.8, y: 1.2, w: 11, h: 5.2 });
+    } catch (err) { /* If image capture fails, skip */ }
+    document.body.removeChild(tempDiv);
+  }
+
+  // Division comparison charts
+  if (!isDivision) {
+    const compMetrics = ["Revenue", "Pipeline", "Closed Sales", "Cash Collections"];
+    for (const metric of compMetrics) {
+      slide = pptx.addSlide();
+      slide.addText(metric + " by Division", { x: 0.5, y: 0.3, w: 12, h: 0.6, fontSize: 20, color: CONFIG.COLORS.dark_blue.replace("#", ""), fontFace: "Times New Roman", bold: true });
+      const tempDiv = document.createElement("div");
+      tempDiv.style.width = "1100px";
+      tempDiv.style.height = "500px";
+      tempDiv.style.position = "absolute";
+      tempDiv.style.left = "-9999px";
+      document.body.appendChild(tempDiv);
+      const comp = getComparisonData(metric, timeRange);
+      await Plotly.newPlot(tempDiv, [{
+        x: comp.map(c => c.division), y: comp.map(c => c.value), type: "bar",
+        marker: { color: comp.map(c => CONFIG.DIVISION_COLORS[c.division]) }
+      }], plotlyLayout(metric, { width: 1100, height: 500 }), { staticPlot: true });
+      try {
+        const imgData = await Plotly.toImage(tempDiv, { format: "png", width: 1100, height: 500 });
+        slide.addImage({ data: imgData, x: 0.8, y: 1.2, w: 11, h: 5.2 });
+      } catch (err) {}
+      document.body.removeChild(tempDiv);
+    }
+  }
+
+  // Division detail slides (if exporting a specific division)
+  if (isDivision) {
+    for (const metric of CONFIG.METRICS) {
+      slide = pptx.addSlide();
+      slide.addText(entity + " - " + metric, { x: 0.5, y: 0.3, w: 12, h: 0.6, fontSize: 20, color: CONFIG.COLORS.dark_blue.replace("#", ""), fontFace: "Times New Roman", bold: true });
+      const tempDiv = document.createElement("div");
+      tempDiv.style.width = "1100px";
+      tempDiv.style.height = "500px";
+      tempDiv.style.position = "absolute";
+      tempDiv.style.left = "-9999px";
+      document.body.appendChild(tempDiv);
+      const td = getTrendData(entity, metric);
+      await Plotly.newPlot(tempDiv, [{
+        x: td.dates, y: td.values, type: "scatter", mode: "lines",
+        line: { color: CONFIG.DIVISION_COLORS[entity], width: 2.5 }, name: metric
+      }], plotlyLayout(metric + " Trend", { width: 1100, height: 500 }), { staticPlot: true });
+      try {
+        const imgData = await Plotly.toImage(tempDiv, { format: "png", width: 1100, height: 500 });
+        slide.addImage({ data: imgData, x: 0.8, y: 1.2, w: 11, h: 5.2 });
+      } catch (err) {}
+      document.body.removeChild(tempDiv);
+    }
+  }
+
+  pptx.writeFile({ fileName: "BlueRidge_Dashboard_" + entity.replace(/\s+/g, "_") + ".pptx" });
+  showToast("PowerPoint exported successfully");
+}
+
+// ==================== NAVIGATION ====================
+function navigateTo(page) {
+  currentPage = page;
+  document.querySelectorAll(".nav-btn").forEach(b => b.classList.toggle("active", b.dataset.page === page));
+  document.querySelectorAll(".page-content").forEach(p => p.classList.add("hidden"));
+  document.getElementById("page-" + page).classList.remove("hidden");
+  document.getElementById("headerTitle").textContent = pageNames[page];
+  document.getElementById("headerSub").textContent = selectedEntity + " | " + getTimeRangeLabel();
+  renderCurrentPage();
+}
+
+function renderCurrentPage() {
+  switch (currentPage) {
+    case "executive": renderExecutiveSummary(); break;
+    case "division": renderDivisionDetail(); break;
+    case "metric": renderMetricDeepDive(); break;
+    case "comparison": renderDivisionComparison(); break;
+    case "data": renderDataManagement(); break;
+    case "integration": renderIntegrationSetup(); break;
+  }
+}
+
+// ==================== EVENT LISTENERS ====================
+document.querySelectorAll(".nav-btn").forEach(btn => {
+  btn.addEventListener("click", () => navigateTo(btn.dataset.page));
+});
+
+document.getElementById("timeRange").addEventListener("change", e => {
+  selectedTimeRange = e.target.value;
+  const customGroup = document.getElementById("customRangeGroup");
+  if (selectedTimeRange === "Custom Range") {
+    customGroup.classList.remove("hidden");
+    // Set sensible defaults if empty
+    const startEl = document.getElementById("customStart");
+    const endEl = document.getElementById("customEnd");
+    if (!startEl.value) {
+      const d = new Date(); d.setDate(d.getDate() - 91);
+      startEl.value = d.toISOString().split("T")[0];
+    }
+    if (!endEl.value) {
+      endEl.value = new Date().toISOString().split("T")[0];
+    }
+  } else {
+    customGroup.classList.add("hidden");
+  }
+  document.getElementById("headerSub").textContent = selectedEntity + " | " + getTimeRangeLabel();
+  if (selectedTimeRange !== "Custom Range") renderCurrentPage();
+});
+
+document.getElementById("applyCustomRange").addEventListener("click", () => {
+  document.getElementById("headerSub").textContent = selectedEntity + " | " + getTimeRangeLabel();
+  renderCurrentPage();
+  showToast("Custom date range applied");
+});
+
+function getTimeRangeLabel() {
+  if (selectedTimeRange === "Custom Range") {
+    const s = document.getElementById("customStart");
+    const e = document.getElementById("customEnd");
+    if (s && e && s.value && e.value) return s.value + " to " + e.value;
+    return "Custom Range";
+  }
+  return selectedTimeRange;
+}
+
+document.getElementById("entitySelect").addEventListener("change", e => {
+  selectedEntity = e.target.value;
+  document.getElementById("headerSub").textContent = selectedEntity + " | " + getTimeRangeLabel();
+  renderCurrentPage();
+});
+
+document.getElementById("exportBtn").addEventListener("click", exportToPPTX);
+
+// ==================== INIT ====================
+document.getElementById("headerDate").textContent = "Report Date: " + new Date().toLocaleDateString();
+generateData();
+navigateTo("executive");
+</script>
+</body>
+</html>

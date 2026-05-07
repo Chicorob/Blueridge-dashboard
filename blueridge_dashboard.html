@@ -1,0 +1,1213 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>BlueRidge Life Sciences Dashboard</title>
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.7/dist/chart.umd.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/chartjs-adapter-date-fns@3.0.0/dist/chartjs-adapter-date-fns.bundle.min.js"></script>
+<style>
+:root {
+  --primary-blue: #0066B3;
+  --dark-blue: #003D6B;
+  --medium-blue: #2E86C1;
+  --light-blue: #AED6F1;
+  --pale-blue: #D6EAF8;
+  --primary-green: #7AB648;
+  --dark-green: #4A7A2E;
+  --medium-green: #5DAE3B;
+  --light-green: #ABEBC6;
+  --pale-green: #D5F5E3;
+  --white: #FFFFFF;
+  --light-gray: #F8F9FA;
+  --medium-gray: #BDC3C7;
+  --dark-gray: #2C3E50;
+  --text-primary: #1A1A2E;
+  --text-secondary: #566573;
+  --positive: #27AE60;
+  --negative: #E74C3C;
+  --neutral: #7F8C8D;
+}
+
+* { margin: 0; padding: 0; box-sizing: border-box; }
+
+body {
+  font-family: 'Times New Roman', Times, serif;
+  background: var(--white);
+  color: var(--text-primary);
+  display: flex;
+  min-height: 100vh;
+}
+
+/* ─── Sidebar ─── */
+.sidebar {
+  width: 260px;
+  min-height: 100vh;
+  background: var(--dark-blue);
+  color: white;
+  padding: 20px 16px;
+  position: fixed;
+  top: 0;
+  left: 0;
+  overflow-y: auto;
+  z-index: 100;
+}
+.sidebar-logo {
+  font-size: 22px;
+  font-weight: 700;
+  color: white;
+  margin-bottom: 6px;
+}
+.sidebar-logo-sub {
+  font-size: 11px;
+  color: var(--light-blue);
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  margin-bottom: 20px;
+}
+.sidebar hr {
+  border: none;
+  border-top: 1px solid rgba(255,255,255,0.15);
+  margin: 16px 0;
+}
+.sidebar-section {
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--light-blue);
+  text-transform: uppercase;
+  letter-spacing: 1.2px;
+  margin-bottom: 10px;
+}
+.nav-btn {
+  display: block;
+  width: 100%;
+  text-align: left;
+  background: transparent;
+  border: none;
+  color: rgba(255,255,255,0.8);
+  font-family: 'Times New Roman', Times, serif;
+  font-size: 15px;
+  padding: 9px 14px;
+  border-radius: 8px;
+  cursor: pointer;
+  margin-bottom: 3px;
+  transition: background 0.15s;
+}
+.nav-btn:hover { background: rgba(255,255,255,0.1); }
+.nav-btn.active {
+  background: rgba(255,255,255,0.15);
+  color: white;
+  font-weight: 700;
+}
+.sidebar label {
+  display: block;
+  font-size: 13px;
+  color: var(--light-blue);
+  margin-bottom: 5px;
+  font-weight: 600;
+}
+.sidebar select {
+  width: 100%;
+  padding: 8px 10px;
+  border-radius: 6px;
+  border: 1px solid rgba(255,255,255,0.2);
+  background: white;
+  color: var(--text-primary);
+  font-family: 'Times New Roman', Times, serif;
+  font-size: 14px;
+  margin-bottom: 14px;
+}
+.sidebar-footer {
+  margin-top: 30px;
+  text-align: center;
+  font-size: 11px;
+  color: var(--light-blue);
+  opacity: 0.7;
+}
+
+/* ─── Main Content ─── */
+.main {
+  margin-left: 260px;
+  flex: 1;
+  padding: 0;
+  min-height: 100vh;
+}
+.header-bar {
+  background: linear-gradient(135deg, var(--dark-blue), var(--primary-blue));
+  padding: 20px 32px;
+  border-radius: 0 0 12px 12px;
+}
+.header-title {
+  color: white;
+  font-size: 28px;
+  font-weight: 700;
+}
+.header-subtitle {
+  color: var(--light-blue);
+  font-size: 15px;
+  margin-top: 3px;
+}
+.divider {
+  height: 3px;
+  background: linear-gradient(90deg, var(--primary-blue), var(--primary-green), transparent);
+  margin: 12px 32px 24px 32px;
+  border-radius: 2px;
+}
+.content { padding: 0 32px 40px 32px; }
+
+/* ─── KPI Cards ─── */
+.kpi-grid {
+  display: grid;
+  grid-template-columns: repeat(5, 1fr);
+  gap: 14px;
+  margin-bottom: 16px;
+}
+.kpi-card {
+  background: linear-gradient(145deg, #FAFEFE, var(--pale-blue));
+  border: 1px solid var(--light-blue);
+  border-radius: 12px;
+  padding: 18px 16px;
+  text-align: center;
+  box-shadow: 0 2px 8px rgba(0,102,179,0.08);
+  transition: transform 0.2s, box-shadow 0.2s;
+  min-height: 140px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+}
+.kpi-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 16px rgba(0,102,179,0.15);
+}
+.kpi-label {
+  font-size: 13px;
+  color: var(--text-secondary);
+  font-weight: 500;
+  text-transform: uppercase;
+  letter-spacing: 0.8px;
+  margin-bottom: 6px;
+}
+.kpi-value {
+  font-size: 26px;
+  font-weight: 700;
+  color: var(--dark-blue);
+  margin-bottom: 5px;
+}
+.kpi-delta {
+  font-size: 13px;
+  font-weight: 600;
+}
+.kpi-delta.positive { color: var(--positive); }
+.kpi-delta.negative { color: var(--negative); }
+
+/* ─── Section Header ─── */
+.section-header {
+  font-size: 22px;
+  font-weight: 700;
+  color: var(--dark-blue);
+  border-bottom: 3px solid var(--primary-green);
+  padding-bottom: 8px;
+  margin: 28px 0 18px 0;
+}
+
+/* ─── Charts ─── */
+.chart-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 24px;
+  margin-bottom: 24px;
+}
+.chart-box {
+  background: white;
+  border: 1px solid #E8E8E8;
+  border-radius: 10px;
+  padding: 18px;
+}
+.chart-box h3 {
+  font-size: 16px;
+  font-weight: 700;
+  color: var(--dark-blue);
+  margin-bottom: 12px;
+}
+.chart-container {
+  position: relative;
+  height: 320px;
+}
+
+/* ─── Tabs ─── */
+.tab-bar {
+  display: flex;
+  gap: 4px;
+  border-bottom: 2px solid #E8E8E8;
+  margin-bottom: 18px;
+  overflow-x: auto;
+}
+.tab-btn {
+  background: transparent;
+  border: none;
+  border-bottom: 3px solid transparent;
+  font-family: 'Times New Roman', Times, serif;
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--text-secondary);
+  padding: 10px 16px;
+  cursor: pointer;
+  white-space: nowrap;
+  transition: color 0.15s, border-color 0.15s;
+}
+.tab-btn:hover { color: var(--dark-blue); }
+.tab-btn.active {
+  color: var(--dark-blue);
+  border-bottom-color: var(--primary-green);
+}
+
+/* ─── Comparison Table ─── */
+.summary-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 14px;
+  margin-bottom: 24px;
+}
+.summary-table th {
+  background: var(--dark-blue);
+  color: white;
+  padding: 12px 14px;
+  text-align: center;
+  font-weight: 700;
+}
+.summary-table th:first-child { text-align: left; }
+.summary-table td {
+  padding: 10px 14px;
+  text-align: center;
+  border-bottom: 1px solid #E8E8E8;
+}
+.summary-table td:first-child {
+  text-align: left;
+  font-weight: 700;
+  color: var(--dark-blue);
+  background: #F0F7FC;
+}
+.summary-table tr:nth-child(even) td:not(:first-child) { background: var(--light-gray); }
+
+/* ─── Ranking list ─── */
+.ranking-item {
+  padding: 8px 12px;
+  margin: 4px 0;
+  border-radius: 6px;
+  font-size: 15px;
+}
+.ranking-item.highlight {
+  background: #E8F4FD;
+  color: var(--primary-blue);
+  font-weight: 700;
+}
+.ranking-item.normal {
+  background: var(--light-gray);
+  color: var(--text-secondary);
+}
+
+/* ─── Custom Range Pickers ─── */
+#customRangeRow { display: none; }
+#customRangeRow.visible { display: flex; gap: 8px; margin-bottom: 14px; }
+#customRangeRow select { flex: 1; }
+
+/* ─── Metric selector ─── */
+.metric-selector { margin-bottom: 18px; }
+.metric-selector select {
+  padding: 8px 12px;
+  border-radius: 6px;
+  border: 1px solid var(--medium-gray);
+  font-family: 'Times New Roman', Times, serif;
+  font-size: 15px;
+  color: var(--text-primary);
+}
+
+/* ─── Division Detail layout ─── */
+.detail-content {
+  display: grid;
+  grid-template-columns: 2fr 1fr;
+  gap: 24px;
+}
+
+/* ─── Page visibility ─── */
+.page { display: none; }
+.page.active { display: block; }
+
+/* ─── Responsive ─── */
+@media (max-width: 1200px) {
+  .kpi-grid { grid-template-columns: repeat(3, 1fr); }
+}
+@media (max-width: 900px) {
+  .sidebar { width: 220px; }
+  .main { margin-left: 220px; }
+  .chart-row { grid-template-columns: 1fr; }
+  .kpi-grid { grid-template-columns: repeat(2, 1fr); }
+  .detail-content { grid-template-columns: 1fr; }
+}
+</style>
+</head>
+<body>
+
+<!-- ─── Sidebar ─── -->
+<div class="sidebar">
+  <div class="sidebar-logo">BlueRidge</div>
+  <div class="sidebar-logo-sub">Life Sciences</div>
+  <hr>
+  <div class="sidebar-section">Navigation</div>
+  <button class="nav-btn active" data-page="executive" onclick="navigateTo('executive')">Executive Summary</button>
+  <button class="nav-btn" data-page="division" onclick="navigateTo('division')">Division Detail</button>
+  <button class="nav-btn" data-page="deepdive" onclick="navigateTo('deepdive')">Metric Deep Dive</button>
+  <button class="nav-btn" data-page="comparison" onclick="navigateTo('comparison')">Division Comparison</button>
+  <hr>
+  <div class="sidebar-section">Filters</div>
+  <label for="timeRange">Time Range</label>
+  <select id="timeRange" onchange="onTimeRangeChange()">
+    <option value="Month">Month</option>
+    <option value="Quarter" selected>Quarter</option>
+    <option value="Current Year">Current Year</option>
+    <option value="Trailing 12 Months">Trailing 12 Months</option>
+    <option value="Custom Range">Custom Range</option>
+  </select>
+  <div id="customRangeRow">
+    <div style="flex:1">
+      <label for="customStart">Start</label>
+      <select id="customStart" onchange="onFiltersChange()"></select>
+    </div>
+    <div style="flex:1">
+      <label for="customEnd">End</label>
+      <select id="customEnd" onchange="onFiltersChange()"></select>
+    </div>
+  </div>
+  <label for="entitySelect">Entity</label>
+  <select id="entitySelect" onchange="onFiltersChange()"></select>
+  <hr>
+  <div class="sidebar-footer">v2.0 | BlueRidge Life Sciences</div>
+</div>
+
+<!-- ─── Main ─── -->
+<div class="main">
+  <div class="header-bar">
+    <div class="header-title" id="headerTitle">Executive Summary</div>
+    <div class="header-subtitle" id="headerSub">BlueRidge Life Sciences | Q1 2026</div>
+  </div>
+  <div class="divider"></div>
+  <div class="content">
+
+    <!-- Executive Summary -->
+    <div class="page active" id="page-executive">
+      <div id="exec-kpis"></div>
+      <div class="section-header">Revenue & Profitability Trends</div>
+      <div class="chart-row">
+        <div class="chart-box"><h3>Revenue</h3><div class="chart-container"><canvas id="exec-revenue"></canvas></div></div>
+        <div class="chart-box"><h3>EBITDA</h3><div class="chart-container"><canvas id="exec-ebitda"></canvas></div></div>
+      </div>
+      <div class="section-header">Sales Performance</div>
+      <div class="chart-row">
+        <div class="chart-box"><h3>Pipeline</h3><div class="chart-container"><canvas id="exec-pipeline"></canvas></div></div>
+        <div class="chart-box"><h3>Win Rate</h3><div class="chart-container"><canvas id="exec-winrate"></canvas></div></div>
+      </div>
+      <div class="section-header">Operational Metrics</div>
+      <div class="chart-row">
+        <div class="chart-box"><h3>Cash Collections</h3><div class="chart-container"><canvas id="exec-cash"></canvas></div></div>
+        <div class="chart-box"><h3>Utilization</h3><div class="chart-container"><canvas id="exec-util"></canvas></div></div>
+      </div>
+    </div>
+
+    <!-- Division Detail -->
+    <div class="page" id="page-division">
+      <div id="div-kpis"></div>
+      <div class="section-header">Metric Trends</div>
+      <div class="tab-bar" id="div-tabs"></div>
+      <div class="detail-content">
+        <div class="chart-box"><h3 id="div-chart-title">Pipeline</h3><div class="chart-container"><canvas id="div-trend"></canvas></div></div>
+        <div>
+          <h3 style="font-size:16px;color:var(--dark-blue);margin-bottom:12px;" id="div-ranking-title">Division Ranking: Pipeline</h3>
+          <div id="div-ranking"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Metric Deep Dive -->
+    <div class="page" id="page-deepdive">
+      <div class="metric-selector">
+        <label for="deepdiveMetric" style="color:var(--text-secondary);font-size:14px;">Select Metric</label>
+        <select id="deepdiveMetric" onchange="renderDeepDive()"></select>
+      </div>
+      <div class="chart-row">
+        <div class="chart-box" style="grid-column:1/2"><h3 id="dd-trend-title">Trend</h3><div class="chart-container"><canvas id="dd-trend"></canvas></div></div>
+        <div class="chart-box"><h3>Division Breakdown</h3><div class="chart-container"><canvas id="dd-breakdown"></canvas></div></div>
+      </div>
+      <div class="section-header" id="dd-bar-title">All Divisions Comparison</div>
+      <div class="chart-box"><div class="chart-container"><canvas id="dd-comparison"></canvas></div></div>
+    </div>
+
+    <!-- Division Comparison -->
+    <div class="page" id="page-comparison">
+      <div class="section-header">Performance Summary</div>
+      <div style="overflow-x:auto"><table class="summary-table" id="comp-table"></table></div>
+      <div class="section-header">Visual Comparison</div>
+      <div id="comp-charts"></div>
+    </div>
+
+  </div>
+</div>
+
+<script>
+// ==================== CONFIGURATION ====================
+const CONFIG = {
+  COMPANY_NAME: "BlueRidge Life Sciences",
+  DIVISIONS: ["Clintrex", "ToxStrategies", "Suttons Creek", "Modality", "Design Science"],
+  METRICS: ["Pipeline", "Weighted Pipeline", "Closed Sales", "Win Rate", "Revenue", "EBITDA", "Cash Collections", "Utilization", "Backlog", "FTE"],
+  CURRENCY_METRICS: ["Pipeline", "Weighted Pipeline", "Closed Sales", "Revenue", "EBITDA", "Cash Collections", "Backlog"],
+  PERCENT_METRICS: ["Win Rate", "Utilization"],
+  COUNT_METRICS: ["FTE"],
+  FLOW_METRICS: ["Closed Sales", "Revenue", "EBITDA", "Cash Collections"],
+  POINT_IN_TIME_METRICS: ["Pipeline", "Weighted Pipeline", "Win Rate", "Utilization", "Backlog", "FTE"],
+  DIVISION_COLORS: {
+    "Clintrex": "#0066B3",
+    "ToxStrategies": "#7AB648",
+    "Suttons Creek": "#2E86C1",
+    "Modality": "#003D6B",
+    "Design Science": "#5DAE3B",
+    "BlueRidge Life Sciences": "#1A1A2E"
+  },
+  DIVISION_PROFILES: {
+    "Clintrex": { "Pipeline":45e6,"Weighted Pipeline":22e6,"Closed Sales":18e6,"Win Rate":42,"Revenue":32e6,"EBITDA":6.4e6,"Cash Collections":30e6,"Utilization":72,"Backlog":38e6,"FTE":145 },
+    "ToxStrategies": { "Pipeline":28e6,"Weighted Pipeline":14e6,"Closed Sales":11e6,"Win Rate":38,"Revenue":22e6,"EBITDA":4.8e6,"Cash Collections":20.5e6,"Utilization":68,"Backlog":25e6,"FTE":95 },
+    "Suttons Creek": { "Pipeline":15e6,"Weighted Pipeline":8e6,"Closed Sales":6.5e6,"Win Rate":45,"Revenue":12e6,"EBITDA":2.8e6,"Cash Collections":11.2e6,"Utilization":75,"Backlog":14e6,"FTE":52 },
+    "Modality": { "Pipeline":20e6,"Weighted Pipeline":10e6,"Closed Sales":8.5e6,"Win Rate":40,"Revenue":16e6,"EBITDA":3.2e6,"Cash Collections":14.8e6,"Utilization":70,"Backlog":18e6,"FTE":78 },
+    "Design Science": { "Pipeline":12e6,"Weighted Pipeline":6.5e6,"Closed Sales":5e6,"Win Rate":44,"Revenue":10e6,"EBITDA":2.2e6,"Cash Collections":9.2e6,"Utilization":74,"Backlog":11e6,"FTE":54 }
+  }
+};
+CONFIG.ALL_ENTITIES = [CONFIG.COMPANY_NAME, ...CONFIG.DIVISIONS];
+
+const PAGE_NAMES = {
+  executive: "Executive Summary",
+  division: "Division Detail",
+  deepdive: "Metric Deep Dive",
+  comparison: "Division Comparison"
+};
+
+// ==================== SEEDED RANDOM ====================
+let seed = 42;
+function seededRandom() {
+  seed = (seed * 16807 + 0) % 2147483647;
+  return (seed - 1) / 2147483646;
+}
+function gaussianRandom(mean, std) {
+  let u1 = seededRandom(), u2 = seededRandom();
+  let z = Math.sqrt(-2 * Math.log(u1)) * Math.cos(2 * Math.PI * u2);
+  return mean + z * std;
+}
+
+// ==================== DATA GENERATION ====================
+let monthlyData = null; // { dates: [Date], divisions: { divName: { metric: [values] } } }
+
+function generateData() {
+  seed = 42;
+  const endDate = new Date(2026, 2, 15); // March 15, 2026
+  const startDate = new Date(endDate);
+  startDate.setDate(startDate.getDate() - 18 * 30);
+
+  // Generate weekly dates
+  const weeks = [];
+  let d = new Date(startDate);
+  // Advance to next Sunday
+  d.setDate(d.getDate() + (7 - d.getDay()) % 7);
+  while (d <= endDate) {
+    weeks.push(new Date(d));
+    d.setDate(d.getDate() + 7);
+  }
+
+  // Generate weekly data per division
+  const weeklyData = {};
+  CONFIG.DIVISIONS.forEach(div => {
+    weeklyData[div] = {};
+    CONFIG.METRICS.forEach(m => { weeklyData[div][m] = []; });
+  });
+
+  const totalWeeks = weeks.length;
+  weeks.forEach((week, wi) => {
+    const month = week.getMonth();
+    let seasonal = 0.98;
+    if (month >= 9) seasonal = 1.12;
+    else if (month <= 2) seasonal = 0.90;
+    else if (month <= 5) seasonal = 1.02;
+
+    const trend = 1.0 + (wi / totalWeeks) * 0.08;
+
+    CONFIG.DIVISIONS.forEach(div => {
+      const base = CONFIG.DIVISION_PROFILES[div];
+      CONFIG.METRICS.forEach(metric => {
+        let value;
+        if (CONFIG.CURRENCY_METRICS.includes(metric)) {
+          const weeklyBase = base[metric] / 52;
+          const noise = gaussianRandom(1.0, 0.12);
+          value = Math.max(0, Math.round(weeklyBase * seasonal * trend * noise));
+        } else if (metric === "FTE") {
+          const noise = gaussianRandom(0, 1.5);
+          value = Math.round(Math.max(10, base[metric] * trend + noise) * 10) / 10;
+        } else {
+          const noise = gaussianRandom(0, 3.5);
+          value = Math.round(Math.min(Math.max(base[metric] * seasonal * trend * 0.98 + noise, 10), 95) * 10) / 10;
+        }
+        weeklyData[div][metric].push(value);
+      });
+    });
+  });
+
+  // Aggregate to monthly
+  const monthMap = {}; // "YYYY-MM" -> { div -> { metric -> [weekly values] } }
+  weeks.forEach((week, wi) => {
+    const key = week.getFullYear() + "-" + String(week.getMonth() + 1).padStart(2, "0");
+    if (!monthMap[key]) monthMap[key] = {};
+    CONFIG.DIVISIONS.forEach(div => {
+      if (!monthMap[key][div]) {
+        monthMap[key][div] = {};
+        CONFIG.METRICS.forEach(m => { monthMap[key][div][m] = []; });
+      }
+      CONFIG.METRICS.forEach(m => {
+        monthMap[key][div][m].push(weeklyData[div][m][wi]);
+      });
+    });
+  });
+
+  const sortedMonths = Object.keys(monthMap).sort();
+  const dates = sortedMonths.map(k => {
+    const [y, m] = k.split("-").map(Number);
+    return new Date(y, m - 1, new Date(y, m, 0).getDate()); // last day of month
+  });
+
+  const divisions = {};
+  CONFIG.DIVISIONS.forEach(div => {
+    divisions[div] = {};
+    CONFIG.METRICS.forEach(metric => {
+      divisions[div][metric] = sortedMonths.map(key => {
+        const vals = monthMap[key][div][metric];
+        if (CONFIG.FLOW_METRICS.includes(metric)) {
+          return vals.reduce((a, b) => a + b, 0);
+        } else {
+          return vals[vals.length - 1]; // last value (point-in-time)
+        }
+      });
+    });
+  });
+
+  // Company totals
+  divisions[CONFIG.COMPANY_NAME] = {};
+  CONFIG.METRICS.forEach(metric => {
+    divisions[CONFIG.COMPANY_NAME][metric] = dates.map((_, i) => {
+      if (CONFIG.CURRENCY_METRICS.includes(metric)) {
+        return CONFIG.DIVISIONS.reduce((sum, div) => sum + divisions[div][metric][i], 0);
+      } else if (CONFIG.COUNT_METRICS.includes(metric)) {
+        return Math.round(CONFIG.DIVISIONS.reduce((sum, div) => sum + divisions[div][metric][i], 0) * 10) / 10;
+      } else {
+        const avg = CONFIG.DIVISIONS.reduce((sum, div) => sum + divisions[div][metric][i], 0) / CONFIG.DIVISIONS.length;
+        return Math.round(avg * 10) / 10;
+      }
+    });
+  });
+
+  monthlyData = { dates, divisions };
+}
+
+// ==================== DATE RANGE HELPERS ====================
+function getDateRange() {
+  const tr = document.getElementById("timeRange").value;
+  const latest = monthlyData.dates[monthlyData.dates.length - 1];
+  let start, end = new Date(latest);
+
+  if (tr === "Month") {
+    start = new Date(latest.getFullYear(), latest.getMonth(), 1);
+  } else if (tr === "Quarter") {
+    const qStart = Math.floor(latest.getMonth() / 3) * 3;
+    start = new Date(latest.getFullYear(), qStart, 1);
+  } else if (tr === "Current Year") {
+    start = new Date(latest.getFullYear(), 0, 1);
+  } else if (tr === "Trailing 12 Months") {
+    start = new Date(latest.getFullYear(), latest.getMonth() - 11, 1);
+  } else if (tr === "Custom Range") {
+    const sv = document.getElementById("customStart").value;
+    const ev = document.getElementById("customEnd").value;
+    if (sv && ev) {
+      const [sy, sm] = sv.split("-").map(Number);
+      const [ey, em] = ev.split("-").map(Number);
+      start = new Date(sy, sm - 1, 1);
+      end = new Date(ey, em - 1, new Date(ey, em, 0).getDate());
+    } else {
+      start = new Date(latest.getFullYear(), latest.getMonth(), 1);
+    }
+  } else {
+    start = new Date(latest.getFullYear(), latest.getMonth(), 1);
+  }
+  return { start, end };
+}
+
+function getPriorYearRange(start, end) {
+  return {
+    start: new Date(start.getFullYear() - 1, start.getMonth(), start.getDate()),
+    end: new Date(end.getFullYear() - 1, end.getMonth(), end.getDate())
+  };
+}
+
+function filterIndices(start, end) {
+  const indices = [];
+  monthlyData.dates.forEach((d, i) => {
+    if (d >= start && d <= end) indices.push(i);
+  });
+  return indices;
+}
+
+// ==================== AGGREGATION ====================
+function aggregateForPeriod(entity, indices) {
+  if (!indices.length) {
+    const result = {};
+    CONFIG.METRICS.forEach(m => { result[m] = 0; });
+    return result;
+  }
+  const data = monthlyData.divisions[entity];
+  if (!data) {
+    const result = {};
+    CONFIG.METRICS.forEach(m => { result[m] = 0; });
+    return result;
+  }
+  const result = {};
+  CONFIG.METRICS.forEach(metric => {
+    if (CONFIG.FLOW_METRICS.includes(metric)) {
+      result[metric] = indices.reduce((sum, i) => sum + (data[metric][i] || 0), 0);
+    } else {
+      // Point-in-time: latest value
+      const lastIdx = indices[indices.length - 1];
+      result[metric] = data[metric][lastIdx] || 0;
+    }
+  });
+  return result;
+}
+
+// ==================== FORMATTING ====================
+function determineUnit(values) {
+  const maxAbs = Math.max(...values.filter(v => v !== 0).map(v => Math.abs(v)), 0);
+  return maxAbs >= 1e6 ? "M" : "K";
+}
+
+function formatValue(val, metric, unit) {
+  if (CONFIG.CURRENCY_METRICS.includes(metric)) {
+    if (unit === "M") return "$" + (val / 1e6).toFixed(1) + "M";
+    if (unit === "K") return "$" + Math.round(val / 1e3).toLocaleString() + "K";
+    if (Math.abs(val) >= 1e6) return "$" + (val / 1e6).toFixed(1) + "M";
+    if (Math.abs(val) >= 1e3) return "$" + Math.round(val / 1e3).toLocaleString() + "K";
+    return "$" + Math.round(val).toLocaleString();
+  }
+  if (CONFIG.PERCENT_METRICS.includes(metric)) return val.toFixed(1) + "%";
+  if (CONFIG.COUNT_METRICS.includes(metric)) return val.toFixed(1);
+  return String(val);
+}
+
+function computeDelta(current, prior) {
+  if (prior === 0) return 0;
+  return Math.round(((current - prior) / Math.abs(prior)) * 1000) / 10;
+}
+
+function getTimeRangeLabel() {
+  const tr = document.getElementById("timeRange").value;
+  const latest = monthlyData.dates[monthlyData.dates.length - 1];
+  const mn = ["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"];
+  if (tr === "Month") return mn[latest.getMonth()] + " " + latest.getFullYear();
+  if (tr === "Quarter") return "Q" + (Math.floor(latest.getMonth() / 3) + 1) + " " + latest.getFullYear();
+  if (tr === "Current Year") return "YTD " + latest.getFullYear();
+  if (tr === "Trailing 12 Months") {
+    const s = new Date(latest.getFullYear(), latest.getMonth() - 11, 1);
+    return mn[s.getMonth()] + " " + s.getFullYear() + " \u2013 " + mn[latest.getMonth()] + " " + latest.getFullYear();
+  }
+  if (tr === "Custom Range") {
+    const sv = document.getElementById("customStart").value;
+    const ev = document.getElementById("customEnd").value;
+    if (sv && ev) {
+      const [sy, sm] = sv.split("-").map(Number);
+      const [ey, em] = ev.split("-").map(Number);
+      return mn[sm-1] + " " + sy + " \u2013 " + mn[em-1] + " " + ey;
+    }
+  }
+  return tr;
+}
+
+// ==================== CHART MANAGEMENT ====================
+const chartInstances = {};
+function destroyChart(id) {
+  if (chartInstances[id]) { chartInstances[id].destroy(); delete chartInstances[id]; }
+}
+
+function createLineChart(canvasId, datasets, dates, yIsCurrency, unit) {
+  destroyChart(canvasId);
+  const ctx = document.getElementById(canvasId);
+  if (!ctx) return;
+  chartInstances[canvasId] = new Chart(ctx, {
+    type: "line",
+    data: {
+      labels: dates,
+      datasets: datasets.map(ds => ({
+        label: ds.label,
+        data: ds.data,
+        borderColor: ds.color,
+        backgroundColor: ds.color + "20",
+        borderWidth: 2.5,
+        pointRadius: 4,
+        pointHoverRadius: 6,
+        tension: 0.1,
+        fill: false
+      }))
+    },
+    options: {
+      responsive: true,
+      maintainAspectRatio: false,
+      plugins: {
+        legend: {
+          position: "bottom",
+          labels: { font: { family: "Times New Roman", size: 12 }, usePointStyle: true }
+        },
+        tooltip: {
+          callbacks: {
+            label: function(ctx) {
+              let v = ctx.parsed.y;
+              if (yIsCurrency) {
+                if (unit === "M") return ctx.dataset.label + ": $" + (v/1e6).toFixed(1) + "M";
+                return ctx.dataset.label + ": $" + Math.round(v/1e3).toLocaleString() + "K";
+              }
+              return ctx.dataset.label + ": " + v.toFixed(1);
+            }
+          }
+        }
+      },
+      scales: {
+        x: {
+          type: "time",
+          time: { unit: "month", displayFormats: { month: "MMM yy" } },
+          grid: { color: "#ECECEC" },
+          ticks: { font: { family: "Times New Roman", size: 12 } }
+        },
+        y: {
+          grid: { color: "#ECECEC" },
+          ticks: {
+            font: { family: "Times New Roman", size: 12 },
+            callback: function(v) {
+              if (yIsCurrency) {
+                if (unit === "M") return "$" + (v/1e6).toFixed(1) + "M";
+                return "$" + Math.round(v/1e3) + "K";
+              }
+              return v;
+            }
+          }
+        }
+      }
+    }
+  });
+}
+
+function createBarChart(canvasId, labels, values, colors, metric, unit) {
+  destroyChart(canvasId);
+  const ctx = document.getElementById(canvasId);
+  if (!ctx) return;
+  const isCurrency = CONFIG.CURRENCY_METRICS.includes(metric);
+  chartInstances[canvasId] = new Chart(ctx, {
+    type: "bar",
+    data: {
+      labels: labels,
+      datasets: [{
+        data: values,
+        backgroundColor: colors,
+        borderRadius: 4
+      }]
+    },
+    options: {
+      responsive: true,
+      maintainAspectRatio: false,
+      plugins: {
+        legend: { display: false },
+        tooltip: {
+          callbacks: {
+            label: function(ctx) {
+              return formatValue(ctx.parsed.y, metric, unit);
+            }
+          }
+        }
+      },
+      scales: {
+        x: {
+          grid: { display: false },
+          ticks: { font: { family: "Times New Roman", size: 12 } }
+        },
+        y: {
+          grid: { color: "#ECECEC" },
+          ticks: {
+            font: { family: "Times New Roman", size: 12 },
+            callback: function(v) {
+              if (isCurrency) {
+                if (unit === "M") return "$" + (v/1e6).toFixed(1) + "M";
+                return "$" + Math.round(v/1e3) + "K";
+              }
+              if (CONFIG.PERCENT_METRICS.includes(metric)) return v.toFixed(0) + "%";
+              return v;
+            }
+          }
+        }
+      }
+    }
+  });
+}
+
+function createDoughnutChart(canvasId, labels, values, colors) {
+  destroyChart(canvasId);
+  const ctx = document.getElementById(canvasId);
+  if (!ctx) return;
+  chartInstances[canvasId] = new Chart(ctx, {
+    type: "doughnut",
+    data: {
+      labels: labels,
+      datasets: [{
+        data: values,
+        backgroundColor: colors,
+        borderWidth: 2
+      }]
+    },
+    options: {
+      responsive: true,
+      maintainAspectRatio: false,
+      cutout: "40%",
+      plugins: {
+        legend: {
+          position: "bottom",
+          labels: { font: { family: "Times New Roman", size: 12 }, usePointStyle: true }
+        }
+      }
+    }
+  });
+}
+
+// ==================== KPI RENDERING ====================
+function renderKPIs(containerId, entity) {
+  const { start, end } = getDateRange();
+  const currIdx = filterIndices(start, end);
+  const { start: ps, end: pe } = getPriorYearRange(start, end);
+  const priorIdx = filterIndices(ps, pe);
+
+  const current = aggregateForPeriod(entity, currIdx);
+  const prior = aggregateForPeriod(entity, priorIdx);
+
+  const currencyVals = CONFIG.CURRENCY_METRICS.map(m => current[m]);
+  const unit = determineUnit(currencyVals);
+
+  let html = '<div class="kpi-grid">';
+  CONFIG.METRICS.forEach(metric => {
+    const val = current[metric];
+    const priorVal = prior[metric];
+    const delta = computeDelta(val, priorVal);
+    const formatted = formatValue(val, metric, CONFIG.CURRENCY_METRICS.includes(metric) ? unit : null);
+    const arrow = delta >= 0 ? "\u25B2" : "\u25BC";
+    const cls = delta >= 0 ? "positive" : "negative";
+    html += `<div class="kpi-card">
+      <div class="kpi-label">${metric}</div>
+      <div class="kpi-value">${formatted}</div>
+      <div class="kpi-delta ${cls}">${arrow} ${Math.abs(delta).toFixed(1)}% vs prior year</div>
+    </div>`;
+  });
+  html += '</div>';
+  document.getElementById(containerId).innerHTML = html;
+}
+
+// ==================== TREND CHART HELPERS ====================
+function getTrendDatasets(entities, metric, indices) {
+  return entities.map(entity => {
+    const data = monthlyData.divisions[entity];
+    return {
+      label: entity,
+      data: indices.map(i => data[metric][i]),
+      color: CONFIG.DIVISION_COLORS[entity] || "#0066B3"
+    };
+  });
+}
+
+function renderTrendChart(canvasId, entities, metric, indices) {
+  const dates = indices.map(i => monthlyData.dates[i]);
+  const datasets = getTrendDatasets(entities, metric, indices);
+  const isCurrency = CONFIG.CURRENCY_METRICS.includes(metric);
+  let unit = null;
+  if (isCurrency) {
+    const allVals = datasets.flatMap(ds => ds.data);
+    unit = determineUnit(allVals);
+  }
+  createLineChart(canvasId, datasets, dates, isCurrency, unit);
+}
+
+function getComparisonData(metric, indices) {
+  const result = {};
+  CONFIG.DIVISIONS.forEach(div => {
+    const data = monthlyData.divisions[div];
+    if (CONFIG.FLOW_METRICS.includes(metric)) {
+      result[div] = indices.reduce((sum, i) => sum + (data[metric][i] || 0), 0);
+    } else {
+      result[div] = data[metric][indices[indices.length - 1]] || 0;
+    }
+  });
+  return result;
+}
+
+// ==================== PAGE RENDERERS ====================
+function renderExecutive() {
+  const entity = document.getElementById("entitySelect").value;
+  renderKPIs("exec-kpis", entity);
+
+  const { start, end } = getDateRange();
+  const indices = filterIndices(start, end);
+  const entities = entity === CONFIG.COMPANY_NAME ? CONFIG.DIVISIONS : [entity];
+
+  const trendCharts = [
+    ["exec-revenue", "Revenue"],
+    ["exec-ebitda", "EBITDA"],
+    ["exec-pipeline", "Pipeline"],
+    ["exec-winrate", "Win Rate"],
+    ["exec-cash", "Cash Collections"],
+    ["exec-util", "Utilization"]
+  ];
+  trendCharts.forEach(([id, metric]) => renderTrendChart(id, entities, metric, indices));
+}
+
+let divDetailMetric = "Pipeline";
+function renderDivisionDetail() {
+  let entity = document.getElementById("entitySelect").value;
+  if (entity === CONFIG.COMPANY_NAME) {
+    entity = CONFIG.DIVISIONS[0];
+    document.getElementById("entitySelect").value = entity;
+  }
+  renderKPIs("div-kpis", entity);
+
+  // Build tabs
+  const tabBar = document.getElementById("div-tabs");
+  tabBar.innerHTML = "";
+  CONFIG.METRICS.forEach(m => {
+    const btn = document.createElement("button");
+    btn.className = "tab-btn" + (m === divDetailMetric ? " active" : "");
+    btn.textContent = m;
+    btn.onclick = () => { divDetailMetric = m; renderDivisionDetailContent(); };
+    tabBar.appendChild(btn);
+  });
+
+  renderDivisionDetailContent();
+}
+
+function renderDivisionDetailContent() {
+  const entity = document.getElementById("entitySelect").value;
+  const metric = divDetailMetric;
+
+  // Update tab active state
+  document.querySelectorAll("#div-tabs .tab-btn").forEach(b => {
+    b.classList.toggle("active", b.textContent === metric);
+  });
+
+  document.getElementById("div-chart-title").textContent = metric + " - " + entity;
+  document.getElementById("div-ranking-title").textContent = "Division Ranking: " + metric;
+
+  const { start, end } = getDateRange();
+  const indices = filterIndices(start, end);
+  renderTrendChart("div-trend", [entity], metric, indices);
+
+  // Ranking
+  const comparison = getComparisonData(metric, indices);
+  const isCurrency = CONFIG.CURRENCY_METRICS.includes(metric);
+  const unit = isCurrency ? determineUnit(Object.values(comparison)) : null;
+  const sorted = Object.entries(comparison).sort((a, b) => b[1] - a[1]);
+
+  let html = "";
+  sorted.forEach(([div, val], i) => {
+    const cls = div === entity ? "highlight" : "normal";
+    const indicator = div === entity ? " \u25C0" : "";
+    html += `<div class="ranking-item ${cls}"><b>${i+1}.</b> ${div}: ${formatValue(val, metric, unit)}${indicator}</div>`;
+  });
+  document.getElementById("div-ranking").innerHTML = html;
+}
+
+function renderDeepDive() {
+  const entity = document.getElementById("entitySelect").value;
+  const metric = document.getElementById("deepdiveMetric").value;
+
+  const { start, end } = getDateRange();
+  const indices = filterIndices(start, end);
+
+  document.getElementById("dd-trend-title").textContent = metric + " Trend";
+  document.getElementById("dd-bar-title").textContent = metric + " - All Divisions Comparison";
+
+  // Trend chart
+  const entities = entity === CONFIG.COMPANY_NAME
+    ? [...CONFIG.DIVISIONS, CONFIG.COMPANY_NAME]
+    : [entity, CONFIG.COMPANY_NAME];
+  renderTrendChart("dd-trend", entities, metric, indices);
+
+  // Division breakdown
+  const comparison = getComparisonData(metric, indices);
+  const divs = Object.keys(comparison);
+  const vals = Object.values(comparison);
+  const colors = divs.map(d => CONFIG.DIVISION_COLORS[d] || "#0066B3");
+  const isCurrency = CONFIG.CURRENCY_METRICS.includes(metric);
+  const unit = isCurrency ? determineUnit(vals) : null;
+
+  if (isCurrency) {
+    createDoughnutChart("dd-breakdown", divs, vals, colors);
+  } else {
+    createBarChart("dd-breakdown", divs, vals, colors, metric, unit);
+  }
+
+  // Full comparison bar chart
+  createBarChart("dd-comparison", divs, vals, colors, metric, unit);
+}
+
+function renderComparison() {
+  const { start, end } = getDateRange();
+  const currIdx = filterIndices(start, end);
+  const { start: ps, end: pe } = getPriorYearRange(start, end);
+  const priorIdx = filterIndices(ps, pe);
+
+  // Collect all currency values for consistent unit
+  const allCurrVals = [];
+  const divData = {};
+  CONFIG.DIVISIONS.forEach(div => {
+    divData[div] = aggregateForPeriod(div, currIdx);
+    CONFIG.CURRENCY_METRICS.forEach(m => allCurrVals.push(divData[div][m]));
+  });
+  const unit = determineUnit(allCurrVals);
+
+  // Summary table
+  let html = "<thead><tr><th>Metric</th>";
+  CONFIG.DIVISIONS.forEach(d => { html += "<th>" + d + "</th>"; });
+  html += "</tr></thead><tbody>";
+  CONFIG.METRICS.forEach(metric => {
+    html += "<tr><td>" + metric + "</td>";
+    CONFIG.DIVISIONS.forEach(div => {
+      const val = divData[div][metric];
+      const fmt = formatValue(val, metric, CONFIG.CURRENCY_METRICS.includes(metric) ? unit : null);
+      html += "<td>" + fmt + "</td>";
+    });
+    html += "</tr>";
+  });
+  html += "</tbody>";
+  document.getElementById("comp-table").innerHTML = html;
+
+  // Charts
+  const pairs = [
+    ["Revenue", "EBITDA"], ["Pipeline", "Weighted Pipeline"],
+    ["Closed Sales", "Win Rate"], ["Cash Collections", "Utilization"],
+    ["Backlog", "FTE"]
+  ];
+  let chartsHtml = "";
+  pairs.forEach(([m1, m2], pi) => {
+    chartsHtml += `<div class="chart-row">
+      <div class="chart-box"><h3>${m1}</h3><div class="chart-container"><canvas id="comp-chart-${pi*2}"></canvas></div></div>
+      <div class="chart-box"><h3>${m2}</h3><div class="chart-container"><canvas id="comp-chart-${pi*2+1}"></canvas></div></div>
+    </div>`;
+  });
+  document.getElementById("comp-charts").innerHTML = chartsHtml;
+
+  // Render each bar chart
+  pairs.forEach(([m1, m2], pi) => {
+    [m1, m2].forEach((metric, mi) => {
+      const comp = getComparisonData(metric, currIdx);
+      const divs = Object.keys(comp);
+      const vals = Object.values(comp);
+      const colors = divs.map(d => CONFIG.DIVISION_COLORS[d]);
+      const isCur = CONFIG.CURRENCY_METRICS.includes(metric);
+      const u = isCur ? determineUnit(vals) : null;
+      createBarChart("comp-chart-" + (pi*2 + mi), divs, vals, colors, metric, u);
+    });
+  });
+}
+
+// ==================== NAVIGATION & STATE ====================
+let currentPage = "executive";
+
+function navigateTo(page) {
+  currentPage = page;
+  document.querySelectorAll(".nav-btn").forEach(b => b.classList.toggle("active", b.dataset.page === page));
+  document.querySelectorAll(".page").forEach(p => p.classList.remove("active"));
+  document.getElementById("page-" + page).classList.add("active");
+
+  // Update entity dropdown
+  const sel = document.getElementById("entitySelect");
+  const entity = sel.value;
+  if (page === "division") {
+    // Hide company option
+    Array.from(sel.options).forEach(o => {
+      if (o.value === CONFIG.COMPANY_NAME) { o.style.display = "none"; o.disabled = true; }
+    });
+    if (entity === CONFIG.COMPANY_NAME) {
+      sel.value = CONFIG.DIVISIONS[0];
+    }
+  } else {
+    Array.from(sel.options).forEach(o => { o.style.display = ""; o.disabled = false; });
+  }
+
+  updateHeader();
+  renderCurrentPage();
+}
+
+function updateHeader() {
+  const entity = document.getElementById("entitySelect").value;
+  document.getElementById("headerTitle").textContent = PAGE_NAMES[currentPage] || "";
+  document.getElementById("headerSub").textContent = entity + " | " + getTimeRangeLabel();
+}
+
+function renderCurrentPage() {
+  updateHeader();
+  if (currentPage === "executive") renderExecutive();
+  else if (currentPage === "division") renderDivisionDetail();
+  else if (currentPage === "deepdive") renderDeepDive();
+  else if (currentPage === "comparison") renderComparison();
+}
+
+function onTimeRangeChange() {
+  const tr = document.getElementById("timeRange").value;
+  const row = document.getElementById("customRangeRow");
+  row.classList.toggle("visible", tr === "Custom Range");
+  onFiltersChange();
+}
+
+function onFiltersChange() {
+  renderCurrentPage();
+}
+
+// ==================== INIT ====================
+function init() {
+  generateData();
+
+  // Populate entity dropdown
+  const entitySel = document.getElementById("entitySelect");
+  CONFIG.ALL_ENTITIES.forEach(e => {
+    const opt = document.createElement("option");
+    opt.value = e; opt.textContent = e;
+    entitySel.appendChild(opt);
+  });
+
+  // Populate custom range month pickers
+  const mn = ["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"];
+  const months = monthlyData.dates.map(d => ({ y: d.getFullYear(), m: d.getMonth() + 1 }));
+  const seen = new Set();
+  const unique = months.filter(x => { const k = x.y + "-" + x.m; if (seen.has(k)) return false; seen.add(k); return true; });
+
+  const startSel = document.getElementById("customStart");
+  const endSel = document.getElementById("customEnd");
+  unique.forEach(({ y, m }) => {
+    const val = y + "-" + String(m).padStart(2, "0");
+    const label = mn[m - 1] + " " + y;
+    startSel.add(new Option(label, val));
+    endSel.add(new Option(label, val));
+  });
+  endSel.value = unique[unique.length - 1].y + "-" + String(unique[unique.length - 1].m).padStart(2, "0");
+
+  // Populate deep dive metric selector
+  const ddSel = document.getElementById("deepdiveMetric");
+  CONFIG.METRICS.forEach(m => { ddSel.add(new Option(m, m)); });
+
+  navigateTo("executive");
+}
+
+document.addEventListener("DOMContentLoaded", init);
+</script>
+</body>
+</html>
