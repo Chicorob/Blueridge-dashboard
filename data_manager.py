@@ -8,10 +8,13 @@ import numpy as np
 from datetime import datetime, timedelta
 from dateutil.relativedelta import relativedelta
 from io import BytesIO
+from pathlib import Path
 from config import (
     DIVISIONS, COMPANY_NAME, METRICS, CURRENCY_METRICS, PERCENT_METRICS,
     COUNT_METRICS, FLOW_METRICS,
 )
+
+ACTUALS_PATH = Path(__file__).parent / "data" / "actuals.csv"
 
 
 def generate_sample_data():
@@ -342,6 +345,24 @@ def create_excel_template():
 
     output.seek(0)
     return output
+
+
+def load_actuals_data(path=ACTUALS_PATH):
+    """Load real monthly actuals from data/actuals.csv.
+
+    Produced by data/build_actuals.py from the BlueRidge dashboard Excel
+    template. Rows are already one-per-division-per-month with month-end dates,
+    so no further aggregation is needed. Missing cells stay as NaN so callers
+    can distinguish 'no data reported' from a real zero.
+    """
+    path = Path(path)
+    if not path.exists():
+        raise FileNotFoundError(
+            f"Actuals CSV not found at {path}. "
+            f"Run 'python data/build_actuals.py' to regenerate it from the Excel template."
+        )
+    df = pd.read_csv(path, parse_dates=["Date"])
+    return df
 
 
 def load_from_excel(uploaded_file):

@@ -19,7 +19,8 @@ from data_manager import (
     filter_by_time_range, aggregate_for_period,
     get_prior_period_data, get_trend_data,
     get_comparison_data, create_excel_template,
-    load_from_excel, format_value, compute_delta,
+    load_from_excel, load_actuals_data, ACTUALS_PATH,
+    format_value, compute_delta,
     determine_display_unit, get_available_months,
     get_time_range_label, get_date_range_for_time_range,
 )
@@ -201,18 +202,37 @@ st.markdown(f"""
 
 
 # ─── Data Initialization ───
+DATA_SOURCE_ACTUALS = "Actuals (real data)"
+DATA_SOURCE_SAMPLE = "Sample (synthetic)"
+
+
 @st.cache_data
-def load_data():
+def load_sample_dataset():
     df = generate_sample_data()
     df = aggregate_to_monthly(df)
     df = compute_company_totals(df)
     return df
 
 
+@st.cache_data
+def load_actuals_dataset():
+    df = load_actuals_data()
+    df = compute_company_totals(df)
+    return df
+
+
+def _actuals_available():
+    return ACTUALS_PATH.exists()
+
+
 def get_data():
     if "uploaded_data" in st.session_state and st.session_state.uploaded_data is not None:
         return st.session_state.uploaded_data
-    return load_data()
+    source = st.session_state.get("data_source",
+                                  DATA_SOURCE_ACTUALS if _actuals_available() else DATA_SOURCE_SAMPLE)
+    if source == DATA_SOURCE_ACTUALS and _actuals_available():
+        return load_actuals_dataset()
+    return load_sample_dataset()
 
 
 # ─── Chart Helpers ───
@@ -320,6 +340,33 @@ def render_sidebar(df):
              "Division Comparison", "Data Management", "Integration Setup"],
             label_visibility="collapsed",
         )
+
+        st.markdown("---")
+        st.markdown("#### Data Source")
+        source_opts = []
+        if _actuals_available():
+            source_opts.append(DATA_SOURCE_ACTUALS)
+        source_opts.append(DATA_SOURCE_SAMPLE)
+        uploaded = st.session_state.get("uploaded_data")
+        if uploaded is not None:
+            source_opts.insert(0, "Uploaded file (this session)")
+        current = st.session_state.get("data_source", source_opts[0])
+        if current not in source_opts:
+            current = source_opts[0]
+        chosen = st.radio(
+            "Data source",
+            source_opts,
+            index=source_opts.index(current),
+            key="_data_source_radio",
+            label_visibility="collapsed",
+        )
+        if chosen == "Uploaded file (this session)":
+            pass  # get_data() will return session_state.uploaded_data
+        else:
+            st.session_state.data_source = chosen
+            if "uploaded_data" in st.session_state and chosen != "Uploaded file (this session)":
+                # User switched away from uploaded → clear it so get_data() falls through
+                st.session_state.uploaded_data = None
 
         st.markdown("---")
         st.markdown("#### Filters")
@@ -659,7 +706,7 @@ def page_data_management(df, time_range, custom_start=None, custom_end=None):
             1. Download the Excel template from the "Download Template" tab<br>
             2. Fill in your data following the template format (monthly data)<br>
             3. Upload the completed file below<br>
-            4. Data will replace the current sample data for this session
+            4. Data will replace the current dataset for this session (switch back via the sidebar)
         </div>
         """, unsafe_allow_html=True)
 

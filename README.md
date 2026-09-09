@@ -61,6 +61,20 @@ to a KPI-only deck and a warning is shown.
 
 ## Data
 
-By default the dashboard generates 18 months of synthetic weekly data and
-aggregates it to monthly. To use real data, download the Excel template from
-the sidebar, fill in monthly rows, and upload.
+By default the dashboard loads real monthly actuals from
+`data/actuals.csv` (26 months × 6 divisions, Jan 2024 – Feb 2026), sourced
+from the BlueRidge dashboard Excel template. The sidebar has a **Data source**
+switch to fall back to a synthetic sample dataset, and the Data Management
+page still supports uploading a fresh Excel template.
+
+### Refreshing actuals from a new Excel template
+
+Drop the updated template into `data/` and rebuild the CSV:
+
+```
+python data/build_actuals.py --input data/YOUR_NEW_TEMPLATE.xlsx
+```
+
+`build_actuals.py` normalizes the schema (header row at Excel row 3, date
+column shifted to month-end, `Win Rate` / `Utilization` converted from
+decimals to percentages) and writes `data/actuals.csv`.

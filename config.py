@@ -4,7 +4,7 @@ BlueRidge Life Sciences Dashboard Configuration
 
 # Company and Division Setup
 COMPANY_NAME = "BlueRidge Life Sciences"
-DIVISIONS = ["Clintrex", "ToxStrategies", "Suttons Creek", "Modality", "Design Science"]
+DIVISIONS = ["Clintrex", "ToxStrategies", "Suttons Creek", "Modality", "Design Science", "Corporate"]
 ALL_ENTITIES = [COMPANY_NAME] + DIVISIONS
 
 # Metrics Configuration
@@ -17,19 +17,20 @@ METRICS = {
     "EBITDA": {"format": "currency", "prefix": "$", "suffix": "", "decimals": 0},
     "Cash Collections": {"format": "currency", "prefix": "$", "suffix": "", "decimals": 0},
     "Utilization": {"format": "percent", "prefix": "", "suffix": "%", "decimals": 1},
+    "Headcount": {"format": "count", "prefix": "", "suffix": "", "decimals": 0},
     "Backlog": {"format": "currency", "prefix": "$", "suffix": "", "decimals": 0},
     "FTE": {"format": "count", "prefix": "", "suffix": "", "decimals": 1},
 }
 
 CURRENCY_METRICS = ["Pipeline", "Weighted Pipeline", "Closed Sales", "Revenue", "EBITDA", "Cash Collections", "Backlog"]
 PERCENT_METRICS = ["Win Rate", "Utilization"]
-COUNT_METRICS = ["FTE"]
+COUNT_METRICS = ["Headcount", "FTE"]
 
 # Aggregation classification:
 # FLOW_METRICS are summed over a period (income-statement style)
 # POINT_IN_TIME_METRICS use the latest month-end value (balance-sheet style)
 FLOW_METRICS = ["Closed Sales", "Revenue", "EBITDA", "Cash Collections"]
-POINT_IN_TIME_METRICS = ["Pipeline", "Weighted Pipeline", "Win Rate", "Utilization", "Backlog", "FTE"]
+POINT_IN_TIME_METRICS = ["Pipeline", "Weighted Pipeline", "Win Rate", "Utilization", "Headcount", "Backlog", "FTE"]
 
 # Time Range Options
 TIME_RANGES = ["Month", "Quarter", "Current Year", "Trailing 12 Months", "Custom Range"]
@@ -64,6 +65,7 @@ DIVISION_COLORS = {
     "Suttons Creek": "#2E86C1",
     "Modality": "#003D6B",
     "Design Science": "#5DAE3B",
+    "Corporate": "#8E44AD",
     COMPANY_NAME: "#1A1A2E",
 }
 
